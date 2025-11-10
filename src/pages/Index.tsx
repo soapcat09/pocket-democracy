@@ -1,55 +1,74 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Vote, Shield, MapPin, ArrowRight, Building2 } from "lucide-react";
-import { findTownByCode } from "@/lib/towns";
+import { Vote, Shield, MapPin, Loader2 } from "lucide-react";
+import { findClosestTown } from "@/lib/towns";
 import { useTown } from "@/contexts/TownContext";
 import { toast } from "sonner";
-import { z } from "zod";
-
-const townCodeSchema = z.string()
-  .trim()
-  .min(1, "Please enter a town code")
-  .max(10, "Town code is too long")
-  .regex(/^[A-Z]{3}\d{2}$/i, "Invalid code format. Use format: ABC01");
 
 const Index = () => {
-  const [code, setCode] = useState("");
-  const [error, setError] = useState("");
+  const [isDetecting, setIsDetecting] = useState(false);
+  const [detectionError, setDetectionError] = useState(false);
   const navigate = useNavigate();
-  const { setSelectedTown } = useTown();
+  const { selectedTown, setSelectedTown } = useTown();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    // Validate input
-    const validation = townCodeSchema.safeParse(code);
-    if (!validation.success) {
-      setError(validation.error.errors[0].message);
-      return;
+  useEffect(() => {
+    // Auto-detect location on component mount if no town is selected
+    if (!selectedTown) {
+      detectLocation();
     }
+  }, []);
 
-    // Find town
-    const town = findTownByCode(code);
-    if (!town) {
-      setError("Town code not found. Please check and try again.");
-      toast.error("Invalid town code", {
-        description: "The code you entered doesn't match any Romanian town."
+  const detectLocation = async () => {
+    setIsDetecting(true);
+    setDetectionError(false);
+    
+    try {
+      // Using ipapi.co for IP geolocation (free tier: 1000 requests/day)
+      const response = await fetch('https://ipapi.co/json/');
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch location data');
+      }
+      
+      const data = await response.json();
+      
+      // Check if in Romania
+      if (data.country_code !== 'RO') {
+        toast.error("Locație nevalidă", {
+          description: "Time2Vote este disponibil doar pentru orașele din România."
+        });
+        setDetectionError(true);
+        setIsDetecting(false);
+        return;
+      }
+      
+      // Find closest Romanian town
+      const town = findClosestTown(data.latitude, data.longitude);
+      
+      if (town) {
+        setSelectedTown(town);
+        toast.success("Locație detectată!", {
+          description: `Bine ai venit în ${town.name}, ${town.county}!`
+        });
+        setTimeout(() => navigate("/initiatives"), 1500);
+      } else {
+        toast.error("Oraș neidentificat", {
+          description: "Nu am putut identifica orașul tău. Te rugăm să încerci din nou."
+        });
+        setDetectionError(true);
+      }
+    } catch (error) {
+      console.error('Location detection error:', error);
+      toast.error("Eroare de detectare", {
+        description: "Nu am putut detecta locația ta. Verifică conexiunea la internet."
       });
-      return;
+      setDetectionError(true);
+    } finally {
+      setIsDetecting(false);
     }
-
-    // Set town and navigate
-    setSelectedTown(town);
-    toast.success(`Welcome to ${town.name}!`, {
-      description: `Viewing initiatives for ${town.county} county`
-    });
-    navigate("/initiatives");
   };
 
   return (
@@ -73,54 +92,44 @@ const Index = () => {
               Votează pe proiectele locale și ajută la dezvoltarea comunității tale
             </p>
 
-            {/* Code Entry Card */}
-            <Card className="p-8 max-w-md mx-auto bg-gradient-to-b from-card to-muted/20 mt-12">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 justify-center mb-4">
-                    <Building2 className="h-6 w-6 text-primary" />
-                    <h2 className="text-2xl font-bold text-foreground">Intră în orașul tău</h2>
+            {/* Location Detection Card */}
+            <Card className="max-w-md mx-auto bg-gradient-to-b from-card to-muted/20 mt-12">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 justify-center">
+                  <MapPin className="h-5 w-5 text-primary" />
+                  Verificare Locație
+                </CardTitle>
+                <CardDescription className="text-center">
+                  {isDetecting 
+                    ? "Detectăm locația ta pentru a-ți afișa inițiativele locale..."
+                    : detectionError
+                    ? "Nu am putut detecta locația ta. Încearcă din nou."
+                    : selectedTown 
+                    ? `Locație confirmată: ${selectedTown.name}, ${selectedTown.county}`
+                    : "Te redirectăm către inițiativele orașului tău..."}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {isDetecting ? (
+                  <div className="flex items-center justify-center gap-2 text-muted-foreground py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    <span>Se detectează...</span>
                   </div>
-                  <p className="text-sm text-muted-foreground text-center">
-                    Introdu codul orașului tău pentru a accesa inițiativele locale
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="townCode" className="text-base">
-                    Cod Oraș
-                  </Label>
-                  <Input
-                    id="townCode"
-                    type="text"
-                    placeholder="ex: BUC01, CLJ01, TIM01"
-                    value={code}
-                    onChange={(e) => {
-                      setCode(e.target.value.toUpperCase());
-                      setError("");
-                    }}
-                    className={`text-center text-lg tracking-wider ${error ? "border-destructive" : ""}`}
-                    maxLength={10}
-                  />
-                  {error && (
-                    <p className="text-sm text-destructive">{error}</p>
-                  )}
-                  <p className="text-xs text-muted-foreground text-center">
-                    Format: 3 litere + 2 cifre (ABC01)
-                  </p>
-                </div>
-
-                <Button type="submit" size="lg" className="w-full text-lg">
-                  Accesează Inițiativele
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-
-                <div className="pt-4 border-t border-border">
-                  <p className="text-xs text-muted-foreground text-center">
-                    Exemple de coduri: București (BUC01), Cluj-Napoca (CLJ01), Timișoara (TIM01), Iași (IAS01)
-                  </p>
-                </div>
-              </form>
+                ) : detectionError ? (
+                  <Button onClick={detectLocation} className="w-full" size="lg">
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Reîncearcă Detectarea
+                  </Button>
+                ) : selectedTown ? (
+                  <Button onClick={() => navigate("/initiatives")} className="w-full" size="lg">
+                    Vezi Inițiativele
+                  </Button>
+                ) : null}
+                
+                <p className="text-xs text-muted-foreground text-center pt-4 border-t border-border">
+                  Folosim adresa ta IP pentru a determina orașul în care te afli și a-ți afișa inițiativele locale relevante. Datele tale de locație nu sunt stocate.
+                </p>
+              </CardContent>
             </Card>
 
             {/* Stats */}
