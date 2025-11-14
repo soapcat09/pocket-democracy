@@ -7,6 +7,7 @@ import { TownProvider } from "./contexts/TownContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import VerifyId from "./pages/VerifyId";
+import Setup2FA from "./pages/Setup2FA";
 import Initiatives from "./pages/Initiatives";
 import InitiativeDetail from "./pages/InitiativeDetail";
 import NotFound from "./pages/NotFound";
@@ -23,6 +24,7 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/verify-id" element={<VerifyId />} />
+            <Route path="/setup-2fa" element={<Setup2FA />} />
             <Route path="/" element={<Index />} />
             <Route path="/initiatives" element={<Initiatives />} />
             <Route path="/initiative/:id" element={<InitiativeDetail />} />

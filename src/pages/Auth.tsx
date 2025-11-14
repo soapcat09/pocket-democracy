@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { format } from "date-fns";
+import { ro } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { romanianTowns } from "@/lib/towns";
@@ -23,6 +24,7 @@ const loginSchema = z.object({
 const signupSchema = z.object({
   email: z.string().trim().email({ message: "Email invalid" }),
   password: z.string().min(6, { message: "Parola trebuie să aibă cel puțin 6 caractere" }),
+  confirmPassword: z.string().min(6, { message: "Confirmarea parolei este obligatorie" }),
   phoneNumber: z.string().min(10, { message: "Numărul de telefon trebuie să aibă cel puțin 10 cifre" }).regex(/^(\+4|0)[0-9]{9}$/, { message: "Număr de telefon invalid pentru România" }),
   birthDate: z.date({
     required_error: "Data nașterii este obligatorie",
@@ -36,6 +38,9 @@ const signupSchema = z.object({
   }, { message: "Trebuie să ai cel puțin 18 ani" }),
   county: z.string().min(1, { message: "Județul este obligatoriu" }),
   city: z.string().min(1, { message: "Localitatea este obligatorie" }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Parolele nu corespund",
+  path: ["confirmPassword"],
 });
 
 const Auth = () => {
@@ -43,6 +48,7 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [birthDate, setBirthDate] = useState<Date>();
   const [county, setCounty] = useState("");
@@ -114,6 +120,7 @@ const Auth = () => {
         const validation = signupSchema.safeParse({ 
           email, 
           password,
+          confirmPassword,
           phoneNumber,
           birthDate,
           county,
@@ -156,10 +163,10 @@ const Auth = () => {
           if (profileError) {
             toast.error("Eroare la crearea profilului: " + profileError.message);
           } else {
-            toast.success("Cont creat cu succes! Redirecționăm către verificarea buletinului...");
-            // Redirect to ID verification after short delay
+            toast.success("Cont creat cu succes! Configurează securitatea contului...");
+            // Redirect to 2FA setup after short delay
             setTimeout(() => {
-              navigate("/verify-id");
+              navigate("/setup-2fa");
             }, 1500);
           }
         }
@@ -212,6 +219,18 @@ const Auth = () => {
             {!isLogin && (
               <>
                 <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirmă Parola</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="phone">Număr de telefon</Label>
                   <Input
                     id="phone"
@@ -232,6 +251,7 @@ const Auth = () => {
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
+                        type="button"
                         variant="outline"
                         className={cn(
                           "w-full justify-start text-left font-normal",
@@ -239,7 +259,7 @@ const Auth = () => {
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {birthDate ? format(birthDate, "dd/MM/yyyy") : <span>Selectează data</span>}
+                        {birthDate ? format(birthDate, "dd MMMM yyyy", { locale: ro }) : <span>Selectează data nașterii</span>}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -250,6 +270,10 @@ const Auth = () => {
                         disabled={(date) =>
                           date > new Date() || date < new Date("1900-01-01")
                         }
+                        defaultMonth={new Date(2000, 0)}
+                        captionLayout="dropdown-buttons"
+                        fromYear={1900}
+                        toYear={new Date().getFullYear()}
                         initialFocus
                         className="pointer-events-auto"
                       />
