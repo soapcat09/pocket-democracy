@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,6 +10,8 @@ import { findTownByCode } from "@/lib/towns";
 import { useTown } from "@/contexts/TownContext";
 import { toast } from "sonner";
 import { z } from "zod";
+import { supabase } from "@/integrations/supabase/client";
+import { User } from "@supabase/supabase-js";
 
 const townCodeSchema = z.string()
   .trim()
@@ -20,8 +22,38 @@ const townCodeSchema = z.string()
 const Index = () => {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
+  const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
-  const { setSelectedTown } = useTown();
+  const { selectedTown, setSelectedTown } = useTown();
+
+  useEffect(() => {
+    // Check authentication status
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        navigate("/auth");
+      } else {
+        setUser(session.user);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (!session) {
+          navigate("/auth");
+        } else {
+          setUser(session.user);
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  useEffect(() => {
+    if (selectedTown && user) {
+      navigate("/initiatives");
+    }
+  }, [selectedTown, user, navigate]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,8 +84,25 @@ const Index = () => {
     navigate("/initiatives");
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    toast.success("Deconectat cu succes");
+  };
+
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-background">
+      <Button
+        onClick={handleSignOut}
+        variant="ghost"
+        className="absolute top-4 right-4 z-10"
+      >
+        Deconectare
+      </Button>
+      
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div 
