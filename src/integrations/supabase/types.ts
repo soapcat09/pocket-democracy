@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      phone_verifications: {
+        Row: {
+          attempts: number
+          code_hash: string
+          created_at: string
+          expires_at: string
+          id: string
+          phone_number: string
+          user_id: string
+          verified: boolean
+        }
+        Insert: {
+          attempts?: number
+          code_hash: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          phone_number: string
+          user_id: string
+          verified?: boolean
+        }
+        Update: {
+          attempts?: number
+          code_hash?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          phone_number?: string
+          user_id?: string
+          verified?: boolean
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           birth_date: string
@@ -25,6 +58,8 @@ export type Database = {
           id_verification_data: Json | null
           id_verified: boolean | null
           phone_number: string | null
+          phone_verified: boolean
+          twofa_sms_enabled: boolean
           updated_at: string
           user_id: string
         }
@@ -38,6 +73,8 @@ export type Database = {
           id_verification_data?: Json | null
           id_verified?: boolean | null
           phone_number?: string | null
+          phone_verified?: boolean
+          twofa_sms_enabled?: boolean
           updated_at?: string
           user_id: string
         }
@@ -51,6 +88,8 @@ export type Database = {
           id_verification_data?: Json | null
           id_verified?: boolean | null
           phone_number?: string | null
+          phone_verified?: boolean
+          twofa_sms_enabled?: boolean
           updated_at?: string
           user_id?: string
         }
