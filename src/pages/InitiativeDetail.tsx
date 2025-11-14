@@ -1,47 +1,117 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, MapPin, Clock, Users, ThumbsUp, ThumbsDown, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Users, ThumbsUp, ThumbsDown, CheckCircle2, Wallet } from "lucide-react";
 import { toast } from "sonner";
-
-const mockInitiative = {
-  id: 1,
-  title: "New Community Park Development",
-  description: "This proposal aims to develop a new 5-acre community park in the downtown area. The park will feature modern playgrounds, walking trails, green spaces, and community gathering areas. This initiative will provide residents with accessible outdoor recreation space and enhance the quality of life in our neighborhood.",
-  fullDetails: "The proposed community park will be located at the intersection of Main Street and Oak Avenue, currently an unused lot. The development plan includes:\n\n• Two modern playgrounds (one for ages 2-5, one for ages 6-12)\n• 1.5 miles of paved walking and biking trails\n• Open green spaces for picnics and recreation\n• Community pavilion with seating for 100 people\n• Sustainable landscaping with native plants\n• Solar-powered lighting throughout the park\n• Accessible paths and facilities for all abilities\n\nEstimated budget: $2.4 million\nTimeline: 18 months from approval\nMaintenance: Funded through Parks Department annual budget",
-  category: "Infrastructure",
-  location: "Downtown District - Main St & Oak Ave",
-  votesFor: 2847,
-  votesAgainst: 432,
-  daysLeft: 12,
-  totalDays: 30,
-  status: "active",
-  sponsor: "Downtown Community Association",
-  datePosted: "November 28, 2025"
-};
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 const InitiativeDetail = () => {
   const { id } = useParams();
   const [hasVoted, setHasVoted] = useState(false);
-  const [userVote, setUserVote] = useState<"yes" | "no" | null>(null);
+  const [userVote, setUserVote] = useState<"for" | "against" | "abstain" | null>(null);
 
-  const totalVotes = mockInitiative.votesFor + mockInitiative.votesAgainst;
-  const votePercentage = Math.round((mockInitiative.votesFor / totalVotes) * 100);
-  const daysProgress = ((mockInitiative.totalDays - mockInitiative.daysLeft) / mockInitiative.totalDays) * 100;
+  const { data: initiative, isLoading } = useQuery({
+    queryKey: ['initiative', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('initiatives')
+        .select(`
+          *,
+          counties (
+            name,
+            cnp_code
+          )
+        `)
+        .eq('id', id)
+        .maybeSingle();
 
-  const handleVote = (vote: "yes" | "no") => {
-    setHasVoted(true);
-    setUserVote(vote);
-    toast.success(
-      vote === "yes" ? "You voted in support!" : "You voted against!",
-      {
-        description: "Your vote has been recorded securely.",
-      }
+      if (error) throw error;
+      if (!data) throw new Error('Inițiativa nu a fost găsită');
+      return data;
+    }
+  });
+
+  const getDaysLeft = (endDate: string) => {
+    const end = new Date(endDate);
+    const now = new Date();
+    const diffTime = end.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
+  };
+
+  const getTotalDays = (startDate: string, endDate: string) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = end.getTime() - start.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 1;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Se încarcă...</p>
+      </div>
     );
+  }
+
+  if (!initiative) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">Inițiativă negăsită</h2>
+          <Link to="/initiatives">
+            <Button>Înapoi la inițiative</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const daysLeft = getDaysLeft(initiative.end_date);
+  const totalDays = getTotalDays(initiative.start_date, initiative.end_date);
+  const daysProgress = ((totalDays - daysLeft) / totalDays) * 100;
+
+  const handleVote = async (vote: "for" | "against" | "abstain") => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error('Trebuie să fii autentificat pentru a vota');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('votes')
+        .upsert({
+          user_id: user.id,
+          initiative_id: id,
+          vote_type: vote
+        });
+
+      if (error) throw error;
+
+      setHasVoted(true);
+      setUserVote(vote);
+      
+      const voteMessages = {
+        for: 'Ai votat în favoarea inițiativei!',
+        against: 'Ai votat împotriva inițiativei!',
+        abstain: 'Te-ai abținut de la vot!'
+      };
+      
+      toast.success(voteMessages[vote], {
+        description: 'Votul tău a fost înregistrat cu succes.',
+      });
+    } catch (error) {
+      console.error('Error voting:', error);
+      toast.error('Eroare la înregistrarea votului');
+    }
   };
 
   return (
