@@ -231,7 +231,7 @@ const InitiativeDetail = () => {
                 <div className="grid grid-cols-3 gap-3">
                   <Button
                     onClick={() => handleVote("for")}
-                    className="gap-2 bg-green-600 hover:bg-green-700"
+                    className="gap-2 bg-success hover:bg-success/90 text-success-foreground"
                   >
                     <ThumbsUp className="h-4 w-4" />
                     Pentru
