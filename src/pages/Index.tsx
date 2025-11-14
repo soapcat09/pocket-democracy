@@ -38,7 +38,10 @@ const Index = () => {
         return;
       }
       
-      // Get town code from CNP
+      // Extract county code from CNP (positions 8-9, which are indices 7-8)
+      const countyCode = profile.cnp.substring(7, 9);
+      
+      // Get town code from county
       const townCode = getTownCodeFromCnpCounty(profile.cnp);
       
       if (!townCode) {
@@ -56,12 +59,14 @@ const Index = () => {
         return;
       }
       
-      // Set town and redirect
+      // Set town and redirect to county-specific page
       setSelectedTown(town);
-      toast.success(`Bine ai venit în ${town.name}!`, {
-        description: `Vizualizezi inițiativele pentru județul ${town.county}`
+      toast.success(`Bine ai venit în județul ${town.county}!`, {
+        description: `Vizualizezi inițiativele pentru ${town.name}`
       });
-      navigate("/initiatives");
+      
+      // Redirect to initiatives page with county filter
+      navigate(`/initiatives?county=${countyCode}`);
     };
 
     initializeUser();

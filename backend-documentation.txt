@@ -1,0 +1,313 @@
+================================================================================
+DOCUMENTAȚIE BACKEND - PLATFORMĂ DE INIȚIATIVE LOCALE
+================================================================================
+
+Această platformă folosește Lovable Cloud (bazat pe Supabase) pentru backend.
+
+================================================================================
+STRUCTURĂ BAZĂ DE DATE
+================================================================================
+
+1. TABEL: counties
+   - Stochează toate cele 42 de județe din România
+   - Coloane:
+     * id (uuid) - identificator unic
+     * cnp_code (text) - codul județului din CNP (01-52)
+     * name (text) - numele județului
+     * created_at (timestamp) - data creării
+   - RLS: Vizibil pentru toată lumea (SELECT public)
+   - Conține: Alba (01), Arad (02), Argeș (03), ... București (40-46), Călărași (51), Giurgiu (52)
+
+2. TABEL: profiles
+   - Stochează profilurile utilizatorilor
+   - Coloane:
+     * id (uuid) - identificator unic
+     * user_id (uuid) - referință la utilizatorul din auth.users
+     * cnp (text) - CNP-ul utilizatorului
+     * full_name (text) - numele complet
+     * birth_date (date) - data nașterii
+     * phone_number (text) - număr de telefon
+     * phone_verified (boolean) - telefon verificat
+     * twofa_sms_enabled (boolean) - autentificare 2FA activată
+     * county (text) - județul
+     * city (text) - orașul
+     * created_at, updated_at (timestamp)
+   - RLS: Utilizatorii pot vedea/edita doar propriul profil
+   - Legătură: user_id → auth.users
+
+3. TABEL: initiatives
+   - Stochează inițiativele locale
+   - Coloane:
+     * id (uuid) - identificator unic
+     * title (text) - titlul inițiativei
+     * description (text) - descrierea detaliată
+     * category (text) - categoria (infrastructură, educație, etc.)
+     * location (text) - locația
+     * county_id (uuid) - referință la județ
+     * status (text) - statusul (active, completed, cancelled)
+     * start_date (timestamp) - data începerii
+     * end_date (timestamp) - data încheierii
+     * created_by (uuid) - creatorul inițiativei
+     * created_at, updated_at (timestamp)
+   - RLS:
+     * SELECT: Toată lumea poate vedea inițiativele active + creatorul vede toate ale sale
+     * INSERT: Utilizatori autentificați pot crea
+     * UPDATE: Doar creatorul poate actualiza
+   - Legătură: county_id → counties.id, created_by → auth.users
+
+4. TABEL: votes
+   - Stochează voturile utilizatorilor pe inițiative
+   - Coloane:
+     * id (uuid) - identificator unic
+     * user_id (uuid) - utilizatorul care votează
+     * initiative_id (uuid) - inițiativa votată
+     * vote_type (text) - tipul votului ('for', 'against', 'abstain')
+     * created_at, updated_at (timestamp)
+   - RLS: Utilizatorii pot vedea/edita/șterge doar propriile voturi
+   - Legătură: user_id → auth.users, initiative_id → initiatives.id
+   - Constraint: Un utilizator poate vota o singură dată per inițiativă
+
+5. TABEL: phone_verifications
+   - Pentru verificarea numerelor de telefon
+   - Coloane:
+     * id (uuid)
+     * user_id (uuid)
+     * phone_number (text)
+     * code_hash (text) - hash-ul codului de verificare
+     * verified (boolean)
+     * attempts (integer)
+     * expires_at (timestamp)
+     * created_at (timestamp)
+   - RLS: Utilizatorii pot vedea/edita doar propriile verificări
+
+================================================================================
+FUNCȚII SQL
+================================================================================
+
+1. get_initiative_vote_counts(initiative_uuid uuid)
+   - Returnează numărul de voturi pentru/contra/abținere pentru o inițiativă
+   - Return type: TABLE(votes_for bigint, votes_against bigint, votes_abstain bigint)
+   - Securitate: SECURITY DEFINER
+   - Utilizare: Calculează voturile fără a expune identitatea votanților
+
+2. update_updated_at_column()
+   - Trigger function pentru actualizarea automată a câmpului updated_at
+   - Se apelează automat la UPDATE pe tabele
+
+================================================================================
+EDGE FUNCTIONS (API ENDPOINTS)
+================================================================================
+
+1. /functions/create-initiative
+   - Method: POST
+   - Autentificare: Necesară (JWT)
+   - Body:
+     {
+       "title": "string",
+       "description": "string",
+       "category": "string",
+       "location": "string",
+       "countyId": "uuid",
+       "endDate": "ISO date string"
+     }
+   - Răspuns: Inițiativa creată cu ID
+   - Logică:
+     * Verifică autentificarea
+     * Validează datele de intrare
+     * Creează inițiativa cu status 'active'
+     * Start date = now(), created_by = user.id
+
+2. /functions/cast-vote
+   - Method: POST
+   - Autentificare: Necesară (JWT)
+   - Body:
+     {
+       "initiativeId": "uuid",
+       "voteType": "for" | "against" | "abstain"
+     }
+   - Răspuns: Votul creat/actualizat
+   - Logică:
+     * Verifică autentificarea
+     * Verifică dacă utilizatorul a votat deja (UPSERT)
+     * Creează sau actualizează votul
+     * Un user = un vot per inițiativă
+
+3. /functions/get-initiatives
+   - Method: GET
+   - Autentificare: Nu (public)
+   - Query params:
+     * countyId (optional) - filtrare după județ
+     * category (optional) - filtrare după categorie
+     * status (optional) - filtrare după status (default: 'active')
+   - Răspuns: Lista de inițiative cu vote counts
+   - Logică:
+     * Interogare cu filtre opționale
+     * Join cu get_initiative_vote_counts() pentru fiecare inițiativă
+     * Returnează inițiativele + număr voturi
+
+4. /functions/get-user-vote
+   - Method: GET
+   - Autentificare: Necesară (JWT)
+   - Query params:
+     * initiativeId - ID-ul inițiativei
+   - Răspuns: Votul utilizatorului pentru inițiativa specificată sau null
+   - Logică:
+     * Verifică autentificarea
+     * Caută votul utilizatorului pentru inițiativa dată
+     * Returnează vote_type sau null dacă nu a votat
+
+================================================================================
+LOGICA CNP (Cod Numeric Personal)
+================================================================================
+
+Structura CNP (13 cifre):
+- Cifra 1: Sex și secol (1-9)
+- Cifre 2-3: Anul nașterii
+- Cifre 4-5: Luna nașterii
+- Cifre 6-7: Ziua nașterii
+- Cifre 8-9: CODUL JUDEȚULUI (01-52)
+- Cifre 10-12: Număr unic în județul respectiv
+- Cifra 13: Cifră de control
+
+MAPARE JUDEȚE (Cifre 8-9):
+01 = Alba (AB) → Alba Iulia
+02 = Arad (AR) → Arad
+03 = Argeș (AG) → Pitești
+04 = Bacău (BC) → Bacău
+05 = Bihor (BH) → Oradea
+06 = Bistrița-Năsăud (BN) → Bistrița
+07 = Botoșani (BT) → Botoșani
+08 = Brașov (BV) → Brașov
+09 = Brăila (BR) → Brăila
+10 = Buzău (BZ) → Buzău
+11 = Caraș-Severin (CS) → Reșița
+12 = Cluj (CL) → Cluj-Napoca
+13 = Constanța (CT) → Constanța
+14 = Covasna (CV) → Sfântu Gheorghe
+15 = Dâmbovița (DB) → Târgoviște
+16 = Dolj (DJ) → Craiova
+17 = Galați (GL) → Galați
+18 = Gorj (GJ) → Târgu Jiu
+19 = Harghita (HR) → Miercurea Ciuc
+20 = Hunedoara (HD) → Deva
+21 = Ialomița (IL) → Slobozia
+22 = Iași (IS) → Iași
+23 = Ilfov (IF) → Buftea
+24 = Maramureș (MM) → Baia Mare
+25 = Mehedinți (MH) → Drobeta-Turnu Severin
+26 = Mureș (MS) → Târgu Mureș
+27 = Neamț (NT) → Piatra Neamț
+28 = Olt (OT) → Slatina
+29 = Prahova (PH) → Ploiești
+30 = Satu Mare (SM) → Satu Mare
+31 = Sălaj (SJ) → Zalău
+32 = Sibiu (SB) → Sibiu
+33 = Suceava (SV) → Suceava
+34 = Teleorman (TR) → Alexandria
+35 = Timiș (TM) → Timișoara
+36 = Tulcea (TL) → Tulcea
+37 = Vaslui (VS) → Vaslui
+38 = Vâlcea (VL) → Râmnicu Vâlcea
+39 = Vrancea (VN) → Focșani
+40-46 = București (B) → București (inclusiv toate sectoarele)
+51 = Călărași (CL) → Călărași
+52 = Giurgiu (GR) → Giurgiu
+
+FUNCȚII HELPER (src/lib/cnp-counties.ts):
+- validateCnpCheckDigit(cnp) - validează cifra de control
+- getCountyFromCnp(cnp) - extrage numele județului
+- getTownCodeFromCnpCounty(cnp) - mapează CNP la codul orașului
+
+================================================================================
+FLUX DE AUTENTIFICARE ȘI REDIRECTARE
+================================================================================
+
+1. Utilizatorul se autentifică pe /auth
+2. După autentificare, ajunge pe pagina Index (/)
+3. Index.tsx:
+   - Verifică sesiunea utilizatorului
+   - Extrage CNP-ul din profiles
+   - Extrage codul județului (cifrele 8-9 din CNP)
+   - Mapează județul la orașul principal
+   - Setează orașul selectat în TownContext
+   - Redirecționează către /initiatives?county={countyCode}
+4. Pagina Initiatives afișează inițiativele filtrate după județ
+
+================================================================================
+ROW LEVEL SECURITY (RLS)
+================================================================================
+
+Toate tabelele au RLS activat pentru securitate:
+
+counties:
+  ✓ SELECT: Public (toată lumea poate citi)
+  ✗ INSERT/UPDATE/DELETE: Nimeni (date statice)
+
+profiles:
+  ✓ SELECT: auth.uid() = user_id (doar propriul profil)
+  ✓ INSERT: auth.uid() = user_id (crearea profilului)
+  ✓ UPDATE: auth.uid() = user_id (editarea profilului)
+  ✗ DELETE: Nimeni
+
+initiatives:
+  ✓ SELECT: status = 'active' SAU auth.uid() = created_by
+  ✓ INSERT: auth.uid() = created_by
+  ✓ UPDATE: auth.uid() = created_by
+  ✗ DELETE: Nimeni
+
+votes:
+  ✓ SELECT: auth.uid() = user_id
+  ✓ INSERT: auth.uid() = user_id
+  ✓ UPDATE: auth.uid() = user_id
+  ✓ DELETE: auth.uid() = user_id
+
+phone_verifications:
+  ✓ SELECT: auth.uid() = user_id
+  ✓ INSERT: auth.uid() = user_id
+  ✓ UPDATE: auth.uid() = user_id
+  ✗ DELETE: Nimeni
+
+================================================================================
+STORAGE BUCKETS
+================================================================================
+
+id-documents (Private):
+- Pentru stocarea documentelor de identitate
+- Acces: Private (nu e public)
+- Utilizare: Verificarea identității utilizatorilor
+
+================================================================================
+SECURITATE
+================================================================================
+
+1. Toate endpoint-urile sensibile necesită autentificare JWT
+2. RLS protejează accesul la date la nivel de rând
+3. Parolele hash-uite automat de Supabase Auth
+4. CORS configurat corect pentru toate edge functions
+5. Validare CNP cu cifră de control
+6. Verificare telefon pentru securitate suplimentară
+7. Rate limiting pe edge functions
+8. Storage privat pentru documente sensibile
+
+================================================================================
+VARIABILE DE MEDIU (.env)
+================================================================================
+
+VITE_SUPABASE_URL - URL-ul proiectului Supabase
+VITE_SUPABASE_PUBLISHABLE_KEY - Cheia publică
+VITE_SUPABASE_PROJECT_ID - ID-ul proiectului
+
+Note: Aceste variabile sunt auto-generate de Lovable Cloud
+
+================================================================================
+DEPLOYMENT
+================================================================================
+
+- Edge functions sunt deployate automat
+- Database migrations se aplică automat
+- Frontend deployat pe Lovable hosting
+- Backend rulează pe Supabase infrastructure
+
+================================================================================
+FIN
+================================================================================
