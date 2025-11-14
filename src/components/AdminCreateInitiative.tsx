@@ -30,7 +30,8 @@ export const AdminCreateInitiative = () => {
     location: '',
     county_id: '',
     start_date: '',
-    end_date: ''
+    end_date: '',
+    budget: ''
   });
 
   const { data: counties } = useQuery({
@@ -77,7 +78,8 @@ export const AdminCreateInitiative = () => {
         location: '',
         county_id: '',
         start_date: '',
-        end_date: ''
+        end_date: '',
+        budget: ''
       });
       
       window.location.reload();
