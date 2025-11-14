@@ -10,77 +10,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "@/hooks/useUserRole";
 import { AdminStats } from "@/components/AdminStats";
 import { AdminCreateInitiative } from "@/components/AdminCreateInitiative";
+import { useQuery } from "@tanstack/react-query";
 
-const categories = ["All", "Infrastructure", "Environment", "Education", "Healthcare", "Safety"];
-
-const mockInitiatives = [
-  {
-    id: 1,
-    title: "New Community Park Development",
-    description: "Proposal to develop a 5-acre community park with playgrounds, walking trails, and green spaces in the downtown area.",
-    category: "Infrastructure",
-    location: "Downtown District",
-    votesFor: 2847,
-    votesAgainst: 432,
-    daysLeft: 12,
-    status: "active"
-  },
-  {
-    id: 2,
-    title: "Solar Panel Installation Program",
-    description: "Initiative to install solar panels on all public buildings to reduce carbon emissions by 40% over the next 5 years.",
-    category: "Environment",
-    location: "Citywide",
-    votesFor: 4521,
-    votesAgainst: 1203,
-    daysLeft: 8,
-    status: "active"
-  },
-  {
-    id: 3,
-    title: "Expand After-School Programs",
-    description: "Funding proposal to expand after-school programs in 15 elementary schools, providing free tutoring and activities.",
-    category: "Education",
-    location: "School District 5",
-    votesFor: 3156,
-    votesAgainst: 892,
-    daysLeft: 15,
-    status: "active"
-  },
-  {
-    id: 4,
-    title: "Bike Lane Network Expansion",
-    description: "Add 25 miles of protected bike lanes connecting residential areas to downtown and commercial districts.",
-    category: "Infrastructure",
-    location: "Multiple Districts",
-    votesFor: 1923,
-    votesAgainst: 1456,
-    daysLeft: 5,
-    status: "active"
-  },
-  {
-    id: 5,
-    title: "Mobile Health Clinic Initiative",
-    description: "Launch three mobile health clinics to provide free health screenings and basic care in underserved neighborhoods.",
-    category: "Healthcare",
-    location: "East Side",
-    votesFor: 5234,
-    votesAgainst: 678,
-    daysLeft: 20,
-    status: "active"
-  },
-  {
-    id: 6,
-    title: "Street Lighting Upgrade",
-    description: "Replace old street lights with energy-efficient LED lights in high-crime areas to improve safety.",
-    category: "Safety",
-    location: "North District",
-    votesFor: 2891,
-    votesAgainst: 543,
-    daysLeft: 10,
-    status: "active"
-  }
-];
+const categories = ["All", "infrastructură", "mediu", "educație", "sănătate", "sport", "cultură", "social", "altele"];
 
 const Initiatives = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -95,13 +27,56 @@ const Initiatives = () => {
     }
   }, [selectedTown, navigate]);
 
-  const filteredInitiatives = selectedCategory === "All" 
-    ? mockInitiatives 
-    : mockInitiatives.filter(i => i.category === selectedCategory);
+  const { data: initiatives = [], refetch } = useQuery({
+    queryKey: ['initiatives'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('initiatives')
+        .select(`
+          *,
+          counties (
+            name,
+            cnp_code
+          )
+        `)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
 
-  const getVotePercentage = (votesFor: number, votesAgainst: number) => {
-    const total = votesFor + votesAgainst;
-    return total > 0 ? Math.round((votesFor / total) * 100) : 0;
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  // Realtime subscription for new initiatives
+  useEffect(() => {
+    const channel = supabase
+      .channel('initiatives-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'initiatives'
+        },
+        () => refetch()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetch]);
+
+  const filteredInitiatives = selectedCategory === "All" 
+    ? initiatives 
+    : initiatives.filter(i => i.category === selectedCategory);
+
+  const getDaysLeft = (endDate: string) => {
+    const end = new Date(endDate);
+    const now = new Date();
+    const diffTime = end.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
   };
 
   const handleSignOut = async () => {
@@ -177,8 +152,7 @@ const Initiatives = () => {
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredInitiatives.map((initiative) => {
-            const votePercentage = getVotePercentage(initiative.votesFor, initiative.votesAgainst);
-            const totalVotes = initiative.votesFor + initiative.votesAgainst;
+            const daysLeft = getDaysLeft(initiative.end_date);
 
             return (
               <Link key={initiative.id} to={`/initiative/${initiative.id}`}>
@@ -187,12 +161,12 @@ const Initiatives = () => {
                     {/* Header */}
                     <div className="space-y-2">
                       <div className="flex items-start justify-between gap-2">
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary" className="text-xs capitalize">
                           {initiative.category}
                         </Badge>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Clock className="h-3 w-3" />
-                          {initiative.daysLeft}d left
+                          {daysLeft}d rămase
                         </div>
                       </div>
                       <h3 className="font-bold text-lg text-foreground leading-tight">
@@ -208,29 +182,7 @@ const Initiatives = () => {
                     {/* Location */}
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <MapPin className="h-4 w-4" />
-                      {initiative.location}
-                    </div>
-
-                    {/* Vote Stats */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-1">
-                          <Users className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">{totalVotes.toLocaleString()}</span>
-                          <span className="text-muted-foreground">votes</span>
-                        </div>
-                        <span className="font-bold text-lg" style={{ color: votePercentage >= 50 ? 'hsl(var(--vote-yes))' : 'hsl(var(--vote-no))' }}>
-                          {votePercentage}%
-                        </span>
-                      </div>
-                      
-                      {/* Progress Bar */}
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-vote-yes transition-all"
-                          style={{ width: `${votePercentage}%` }}
-                        />
-                      </div>
+                      {initiative.location}, {initiative.counties?.name}
                     </div>
 
                     {/* CTA */}
