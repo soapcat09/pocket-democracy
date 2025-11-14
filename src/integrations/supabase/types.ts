@@ -37,6 +37,7 @@ export type Database = {
       }
       initiatives: {
         Row: {
+          budget: number | null
           category: string
           county_id: string
           created_at: string
@@ -51,6 +52,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          budget?: number | null
           category: string
           county_id: string
           created_at?: string
@@ -65,6 +67,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          budget?: number | null
           category?: string
           county_id?: string
           created_at?: string
