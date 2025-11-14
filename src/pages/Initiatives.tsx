@@ -7,6 +7,9 @@ import { MapPin, Clock, Users, Building2, LogOut } from "lucide-react";
 import { useTown } from "@/contexts/TownContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useUserRole } from "@/hooks/useUserRole";
+import { AdminStats } from "@/components/AdminStats";
+import { AdminCreateInitiative } from "@/components/AdminCreateInitiative";
 
 const categories = ["All", "Infrastructure", "Environment", "Education", "Healthcare", "Safety"];
 
@@ -83,6 +86,7 @@ const Initiatives = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const { selectedTown, setSelectedTown } = useTown();
   const navigate = useNavigate();
+  const { isAdmin, loading: roleLoading } = useUserRole();
 
   useEffect(() => {
     if (!selectedTown) {
@@ -135,6 +139,13 @@ const Initiatives = () => {
           </div>
         </div>
       </header>
+
+      {/* Admin Stats - shown only for admins */}
+      {isAdmin && (
+        <div className="container mx-auto px-4 py-6">
+          <AdminStats />
+        </div>
+      )}
 
       {/* Category Filter */}
       <div className="border-b border-border bg-card/50">
@@ -233,6 +244,9 @@ const Initiatives = () => {
           })}
         </div>
       </main>
+
+      {/* Admin Create Initiative Button - shown only for admins */}
+      {isAdmin && <AdminCreateInitiative />}
     </div>
   );
 };
