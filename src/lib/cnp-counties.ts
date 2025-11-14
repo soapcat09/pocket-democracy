@@ -70,3 +70,38 @@ export const getCountyFromCnp = (cnp: string): string | null => {
   const countyCode = cnp.substring(7, 9);
   return cnpCountyMap[countyCode] || null;
 };
+
+// Map county codes from CNP to town codes used in the app
+export const getTownCodeFromCnpCounty = (cnp: string): string | null => {
+  const countyCode = cnp.substring(7, 9);
+  
+  // București and all sectors map to BUC01
+  if (["40", "41", "42", "43", "44", "45", "46"].includes(countyCode)) {
+    return "BUC01";
+  }
+  
+  // Map other counties to their main cities
+  const countyToTownMap: Record<string, string> = {
+    "12": "CLJ01", // Cluj -> Cluj-Napoca
+    "35": "TIM01", // Timiș -> Timișoara
+    "22": "IAS01", // Iași -> Iași
+    "13": "CTA01", // Constanța -> Constanța
+    "16": "CRV01", // Dolj -> Craiova
+    "08": "BRS01", // Brașov -> Brașov
+    "17": "GLT01", // Galați -> Galați
+    "29": "PLO01", // Prahova -> Ploiești
+    "05": "ORD01", // Bihor -> Oradea
+    "04": "BCU01", // Bacău -> Bacău
+    "03": "PTI01", // Argeș -> Pitești
+    "32": "SBU01", // Sibiu -> Sibiu
+    "26": "TGM01", // Mureș -> Târgu Mureș
+    "24": "BAI01", // Maramureș -> Baia Mare
+    "10": "BZU01", // Buzău -> Buzău
+    "07": "BTU01", // Botoșani -> Botoșani
+    "30": "STU01", // Satu Mare -> Satu Mare
+    "38": "RMV01", // Vâlcea -> Râmnicu Vâlcea
+    "33": "SUC01", // Suceava -> Suceava
+  };
+  
+  return countyToTownMap[countyCode] || null;
+};
