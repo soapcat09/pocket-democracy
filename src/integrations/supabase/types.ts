@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      comment_votes: {
+        Row: {
+          comment_id: string
+          created_at: string
+          id: string
+          user_id: string
+          vote_type: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+          vote_type: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+          vote_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_votes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "initiative_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       counties: {
         Row: {
           cnp_code: string
@@ -34,6 +66,51 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      initiative_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          initiative_id: string
+          parent_comment_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          initiative_id: string
+          parent_comment_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          initiative_id?: string
+          parent_comment_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "initiative_comments_initiative_id_fkey"
+            columns: ["initiative_id"]
+            isOneToOne: false
+            referencedRelation: "initiatives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "initiative_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "initiative_comments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       initiatives: {
         Row: {
@@ -230,6 +307,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_comment_vote_counts: {
+        Args: { comment_uuid: string }
+        Returns: {
+          downvotes: number
+          upvotes: number
+        }[]
+      }
       get_initiative_vote_counts: {
         Args: { initiative_uuid: string }
         Returns: {

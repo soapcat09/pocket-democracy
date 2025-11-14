@@ -9,6 +9,7 @@ import { ArrowLeft, MapPin, Clock, Users, ThumbsUp, ThumbsDown, CheckCircle2 } f
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { InitiativeComments } from "@/components/InitiativeComments";
 
 const InitiativeDetail = () => {
   const { id } = useParams();
@@ -319,6 +320,9 @@ const InitiativeDetail = () => {
             </div>
           </Card>
         </section>
+
+        {/* Comments Section */}
+        <InitiativeComments initiativeId={id!} />
       </main>
     </div>
   );
