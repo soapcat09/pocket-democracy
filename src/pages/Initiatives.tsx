@@ -185,6 +185,22 @@ const Initiatives = () => {
                       {initiative.location}, {initiative.counties?.name}
                     </div>
 
+                    {/* Budget */}
+                    {initiative.budget && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <div className="px-3 py-1.5 bg-primary/10 rounded-md">
+                          <span className="font-semibold text-primary">
+                            {new Intl.NumberFormat('ro-RO', {
+                              style: 'currency',
+                              currency: 'RON',
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 0
+                            }).format(initiative.budget)}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
                     {/* CTA */}
                     <Button className="w-full" variant="default">
                       Vezi & Votează
