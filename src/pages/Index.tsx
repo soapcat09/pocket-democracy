@@ -1,0 +1,100 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Vote } from "lucide-react";
+import { findTownByCode } from "@/lib/towns";
+import { useTown } from "@/contexts/TownContext";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { User } from "@supabase/supabase-js";
+import { getTownCodeFromCnpCounty } from "@/lib/cnp-counties";
+
+const Index = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const { setSelectedTown } = useTown();
+
+  useEffect(() => {
+    const initializeUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        navigate("/auth");
+        return;
+      }
+      
+      setUser(session.user);
+      
+      // Fetch user profile to get CNP
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('cnp')
+        .eq('user_id', session.user.id)
+        .single();
+      
+      if (error || !profile?.cnp) {
+        toast.error("Could not find your CNP in the profile");
+        setLoading(false);
+        return;
+      }
+      
+      // Extract county code from CNP (positions 8-9, which are indices 7-8)
+      const countyCode = profile.cnp.substring(7, 9);
+      
+      // Get town code from county
+      const townCode = getTownCodeFromCnpCounty(profile.cnp);
+      
+      if (!townCode) {
+        toast.error("Your county does not have a city available on the platform at the moment");
+        setLoading(false);
+        return;
+      }
+      
+      // Find town by code
+      const town = findTownByCode(townCode);
+      
+      if (!town) {
+        toast.error("Could not find the city corresponding to your county");
+        setLoading(false);
+        return;
+      }
+      
+      // Set town and redirect to county-specific page
+      setSelectedTown(town);
+      toast.success(`Welcome to ${town.county} county!`, {
+        description: `You are viewing initiatives for ${town.name}`
+      });
+      
+      // Redirect to initiatives page with county filter
+      navigate(`/initiatives?county=${countyCode}`);
+    };
+
+    initializeUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (!session) {
+          navigate("/auth");
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, [navigate, setSelectedTown]);
+
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <Vote className="h-12 w-12 text-primary mx-auto animate-pulse" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // This page auto-redirects, but we show a fallback just in case
+  return null;
+};
+
+export default Index;
