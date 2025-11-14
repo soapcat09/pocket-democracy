@@ -160,8 +160,8 @@ const Initiatives = () => {
 
             return (
               <Link key={initiative.id} to={`/initiative/${initiative.id}`}>
-                <Card className="h-full p-6 hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-b from-card to-card/50">
-                  <div className="space-y-4">
+                <Card className="h-full p-6 hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-b from-card to-card/50 flex flex-col">
+                  <div className="flex flex-col flex-1 space-y-4">
                     {/* Header */}
                     <div className="space-y-2">
                       <div className="flex items-start justify-between gap-2">
@@ -173,13 +173,13 @@ const Initiatives = () => {
                           {daysLeft}d rămase
                         </div>
                       </div>
-                      <h3 className="font-bold text-lg text-foreground leading-tight">
+                      <h3 className="font-bold text-lg text-foreground leading-tight line-clamp-2 min-h-[3.5rem]">
                         {initiative.title}
                       </h3>
                     </div>
 
                     {/* Description */}
-                    <p className="text-sm text-muted-foreground line-clamp-3">
+                    <p className="text-sm text-muted-foreground line-clamp-3 min-h-[4.5rem]">
                       {initiative.description}
                     </p>
 
@@ -190,7 +190,7 @@ const Initiatives = () => {
                     </div>
 
                     {/* CTA */}
-                    <Button className="w-full" variant="default">
+                    <Button className="w-full mt-auto" variant="default">
                       Vezi & Votează
                     </Button>
                   </div>
