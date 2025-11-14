@@ -11,7 +11,6 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { format } from "date-fns";
-import { ro } from "date-fns/locale/ro";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { romanianTowns } from "@/lib/towns";
@@ -259,7 +258,7 @@ const Auth = () => {
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {birthDate ? format(birthDate, "dd MMMM yyyy", { locale: ro }) : <span>Selectează data nașterii</span>}
+                        {birthDate ? format(birthDate, "dd/MM/yyyy") : <span>Selectează data nașterii</span>}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
