@@ -23,6 +23,7 @@ const loginSchema = z.object({
 const signupSchema = z.object({
   email: z.string().trim().email({ message: "Email invalid" }),
   password: z.string().min(6, { message: "Parola trebuie să aibă cel puțin 6 caractere" }),
+  phoneNumber: z.string().min(10, { message: "Numărul de telefon trebuie să aibă cel puțin 10 cifre" }).regex(/^(\+4|0)[0-9]{9}$/, { message: "Număr de telefon invalid pentru România" }),
   birthDate: z.date({
     required_error: "Data nașterii este obligatorie",
   }).refine((date) => {
@@ -42,6 +43,7 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [birthDate, setBirthDate] = useState<Date>();
   const [county, setCounty] = useState("");
   const [city, setCity] = useState("");
@@ -111,7 +113,8 @@ const Auth = () => {
         // Validate signup input
         const validation = signupSchema.safeParse({ 
           email, 
-          password, 
+          password,
+          phoneNumber,
           birthDate,
           county,
           city 
@@ -147,17 +150,17 @@ const Auth = () => {
               birth_date: format(validation.data.birthDate, 'yyyy-MM-dd'),
               county: validation.data.county,
               city: validation.data.city,
+              phone_number: validation.data.phoneNumber,
             });
 
           if (profileError) {
             toast.error("Eroare la crearea profilului: " + profileError.message);
           } else {
-            toast.success("Cont creat cu succes! Te poți autentifica acum.");
-            setIsLogin(true);
-            // Reset signup fields
-            setBirthDate(undefined);
-            setCounty("");
-            setCity("");
+            toast.success("Cont creat cu succes! Redirecționăm către verificarea buletinului...");
+            // Redirect to ID verification after short delay
+            setTimeout(() => {
+              navigate("/verify-id");
+            }, 1500);
           }
         }
       }
@@ -205,6 +208,22 @@ const Auth = () => {
                 required
               />
             </div>
+
+            {!isLogin && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Număr de telefon</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+40 sau 07xx xxx xxx"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    required
+                  />
+                </div>
+              </>
+            )}
 
             {!isLogin && (
               <>

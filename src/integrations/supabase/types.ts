@@ -21,6 +21,10 @@ export type Database = {
           county: string
           created_at: string
           id: string
+          id_document_url: string | null
+          id_verification_data: Json | null
+          id_verified: boolean | null
+          phone_number: string | null
           updated_at: string
           user_id: string
         }
@@ -30,6 +34,10 @@ export type Database = {
           county: string
           created_at?: string
           id?: string
+          id_document_url?: string | null
+          id_verification_data?: Json | null
+          id_verified?: boolean | null
+          phone_number?: string | null
           updated_at?: string
           user_id: string
         }
@@ -39,6 +47,10 @@ export type Database = {
           county?: string
           created_at?: string
           id?: string
+          id_document_url?: string | null
+          id_verification_data?: Json | null
+          id_verified?: boolean | null
+          phone_number?: string | null
           updated_at?: string
           user_id?: string
         }
