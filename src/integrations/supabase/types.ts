@@ -54,10 +54,8 @@ export type Database = {
           cnp: string | null
           county: string
           created_at: string
+          full_name: string | null
           id: string
-          id_document_url: string | null
-          id_verification_data: Json | null
-          id_verified: boolean | null
           phone_number: string | null
           phone_verified: boolean
           twofa_sms_enabled: boolean
@@ -70,10 +68,8 @@ export type Database = {
           cnp?: string | null
           county: string
           created_at?: string
+          full_name?: string | null
           id?: string
-          id_document_url?: string | null
-          id_verification_data?: Json | null
-          id_verified?: boolean | null
           phone_number?: string | null
           phone_verified?: boolean
           twofa_sms_enabled?: boolean
@@ -86,10 +82,8 @@ export type Database = {
           cnp?: string | null
           county?: string
           created_at?: string
+          full_name?: string | null
           id?: string
-          id_document_url?: string | null
-          id_verification_data?: Json | null
-          id_verified?: boolean | null
           phone_number?: string | null
           phone_verified?: boolean
           twofa_sms_enabled?: boolean

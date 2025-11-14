@@ -18,6 +18,8 @@ const loginSchema = z.object({
 const signupSchema = z.object({
   email: z.string().trim().email({ message: "Email invalid" }),
   password: z.string().min(6, { message: "Parola trebuie să aibă cel puțin 6 caractere" }),
+  confirmPassword: z.string().min(6, { message: "Confirmarea parolei este necesară" }),
+  fullName: z.string().trim().min(3, { message: "Numele complet trebuie să aibă cel puțin 3 caractere" }),
   phoneNumber: z.string().min(10, { message: "Numărul de telefon trebuie să aibă cel puțin 10 cifre" }).regex(/^(\+4|0)[0-9]{9}$/, { message: "Număr de telefon invalid pentru România" }),
   cnp: z.string().length(13, { message: "CNP-ul trebuie să aibă exact 13 cifre" })
     .regex(/^[0-9]{13}$/, { message: "CNP-ul trebuie să conțină doar cifre" })
@@ -62,6 +64,9 @@ const signupSchema = z.object({
       
       return actualAge >= 18;
     }, { message: "Trebuie să ai cel puțin 18 ani conform CNP-ului" }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Parolele nu se potrivesc",
+  path: ["confirmPassword"],
 });
 
 const Auth = () => {
@@ -69,6 +74,8 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [cnp, setCnp] = useState("");
   const [loading, setLoading] = useState(false);
@@ -129,6 +136,8 @@ const Auth = () => {
         const validation = signupSchema.safeParse({ 
           email, 
           password, 
+          confirmPassword,
+          fullName,
           phoneNumber, 
           cnp
         });
@@ -181,6 +190,7 @@ const Auth = () => {
             .from('profiles')
             .insert({
               user_id: data.user.id,
+              full_name: validation.data.fullName,
               birth_date: format(birthDate, 'yyyy-MM-dd'),
               county: county || "Necunoscut",
               city: "", // City is not extracted from CNP
@@ -191,11 +201,7 @@ const Auth = () => {
           if (profileError) {
             toast.error("Eroare la crearea profilului: " + profileError.message);
           } else {
-            toast.success("Cont creat cu succes! Redirecționăm către verificarea buletinului...");
-            // Redirect to ID verification after short delay
-            setTimeout(() => {
-              navigate("/verify-id");
-            }, 1500);
+            toast.success("Cont creat cu succes!");
           }
         }
       }
@@ -243,6 +249,33 @@ const Auth = () => {
                 required
               />
             </div>
+
+            {!isLogin && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirmă Parola</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Nume Complet</Label>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    placeholder="Ex: Ion Popescu"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                  />
+                </div>
+              </>
+            )}
 
             {!isLogin && (
               <>
