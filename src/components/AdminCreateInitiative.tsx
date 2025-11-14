@@ -62,7 +62,14 @@ export const AdminCreateInitiative = () => {
       const { error } = await supabase
         .from('initiatives')
         .insert({
-          ...formData,
+          title: formData.title,
+          description: formData.description,
+          category: formData.category,
+          location: formData.location,
+          county_id: formData.county_id,
+          start_date: formData.start_date,
+          end_date: formData.end_date,
+          budget: formData.budget ? parseFloat(formData.budget) : null,
           created_by: user.id,
           status: 'active'
         });
