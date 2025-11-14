@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -7,42 +7,160 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, MapPin, Clock, Users, ThumbsUp, ThumbsDown, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
-
-const mockInitiative = {
-  id: 1,
-  title: "New Community Park Development",
-  description: "This proposal aims to develop a new 5-acre community park in the downtown area. The park will feature modern playgrounds, walking trails, green spaces, and community gathering areas. This initiative will provide residents with accessible outdoor recreation space and enhance the quality of life in our neighborhood.",
-  fullDetails: "The proposed community park will be located at the intersection of Main Street and Oak Avenue, currently an unused lot. The development plan includes:\n\n• Two modern playgrounds (one for ages 2-5, one for ages 6-12)\n• 1.5 miles of paved walking and biking trails\n• Open green spaces for picnics and recreation\n• Community pavilion with seating for 100 people\n• Sustainable landscaping with native plants\n• Solar-powered lighting throughout the park\n• Accessible paths and facilities for all abilities\n\nEstimated budget: $2.4 million\nTimeline: 18 months from approval\nMaintenance: Funded through Parks Department annual budget",
-  category: "Infrastructure",
-  location: "Downtown District - Main St & Oak Ave",
-  votesFor: 2847,
-  votesAgainst: 432,
-  daysLeft: 12,
-  totalDays: 30,
-  status: "active",
-  sponsor: "Downtown Community Association",
-  datePosted: "November 28, 2025"
-};
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { InitiativeComments } from "@/components/InitiativeComments";
 
 const InitiativeDetail = () => {
   const { id } = useParams();
-  const [hasVoted, setHasVoted] = useState(false);
-  const [userVote, setUserVote] = useState<"yes" | "no" | null>(null);
+  const navigate = useNavigate();
+  const [userVote, setUserVote] = useState<"for" | "against" | "abstain" | null>(null);
 
-  const totalVotes = mockInitiative.votesFor + mockInitiative.votesAgainst;
-  const votePercentage = Math.round((mockInitiative.votesFor / totalVotes) * 100);
-  const daysProgress = ((mockInitiative.totalDays - mockInitiative.daysLeft) / mockInitiative.totalDays) * 100;
+  // Fetch initiative details
+  const { data: initiative, isLoading } = useQuery({
+    queryKey: ['initiative', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('initiatives')
+        .select(`
+          *,
+          counties (
+            name,
+            cnp_code
+          )
+        `)
+        .eq('id', id)
+        .single();
 
-  const handleVote = (vote: "yes" | "no") => {
-    setHasVoted(true);
-    setUserVote(vote);
-    toast.success(
-      vote === "yes" ? "You voted in support!" : "You voted against!",
-      {
-        description: "Your vote has been recorded securely.",
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id
+  });
+
+  // Fetch vote counts
+  const { data: voteCounts, refetch: refetchVoteCounts } = useQuery({
+    queryKey: ['voteCounts', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .rpc('get_initiative_vote_counts', { initiative_uuid: id });
+
+      if (error) throw error;
+      return data?.[0] || { votes_for: 0, votes_against: 0, votes_abstain: 0 };
+    },
+    enabled: !!id
+  });
+
+  // Check if user has voted
+  const { data: existingVote, refetch: refetchVote } = useQuery({
+    queryKey: ['userVote', id],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data, error } = await supabase
+        .from('votes')
+        .select('vote_type')
+        .eq('initiative_id', id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id
+  });
+
+  useEffect(() => {
+    if (existingVote) {
+      setUserVote(existingVote.vote_type as "for" | "against" | "abstain");
+    }
+  }, [existingVote]);
+
+  const handleVote = async (voteType: "for" | "against" | "abstain") => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error("You must be authenticated to vote");
+      navigate("/auth");
+      return;
+    }
+
+    try {
+      // Check if user already voted
+      const { data: existing } = await supabase
+        .from('votes')
+        .select('id')
+        .eq('initiative_id', id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (existing) {
+        // Update existing vote
+        const { error } = await supabase
+          .from('votes')
+          .update({ vote_type: voteType })
+          .eq('id', existing.id);
+
+        if (error) throw error;
+        toast.success("Vote updated successfully!");
+      } else {
+        // Insert new vote
+        const { error } = await supabase
+          .from('votes')
+          .insert({
+            initiative_id: id,
+            user_id: user.id,
+            vote_type: voteType
+          });
+
+        if (error) throw error;
+        toast.success("Vote recorded successfully!");
       }
-    );
+
+      setUserVote(voteType);
+      refetchVote();
+      refetchVoteCounts();
+    } catch (error) {
+      console.error("Error voting:", error);
+      toast.error("An error occurred while voting");
+    }
   };
+
+  const getDaysLeft = (endDate: string) => {
+    const end = new Date(endDate);
+    const now = new Date();
+    const diffTime = end.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!initiative) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Initiative not found</p>
+          <Button onClick={() => navigate("/initiatives")} className="mt-4">
+            Back to Initiatives
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const daysLeft = getDaysLeft(initiative.end_date);
+  const totalVotes = (voteCounts?.votes_for || 0) + (voteCounts?.votes_against || 0) + (voteCounts?.votes_abstain || 0);
+  const votePercentage = totalVotes > 0 ? Math.round(((voteCounts?.votes_for || 0) / totalVotes) * 100) : 0;
+  const hasVoted = !!userVote;
 
   return (
     <div className="min-h-screen bg-background">
@@ -60,16 +178,16 @@ const InitiativeDetail = () => {
         {/* Title & Category */}
         <div className="space-y-4 mb-8">
           <div className="flex items-start gap-3 flex-wrap">
-            <Badge variant="secondary">{mockInitiative.category}</Badge>
+            <Badge variant="secondary" className="capitalize">{initiative.category}</Badge>
             <Badge variant="outline" className="gap-1">
               <Clock className="h-3 w-3" />
-              {mockInitiative.daysLeft} days remaining
+              {daysLeft} days remaining
             </Badge>
           </div>
-          <h1 className="text-4xl font-bold text-foreground">{mockInitiative.title}</h1>
+          <h1 className="text-4xl font-bold text-foreground">{initiative.title}</h1>
           <div className="flex items-center gap-2 text-muted-foreground">
             <MapPin className="h-4 w-4" />
-            <span>{mockInitiative.location}</span>
+            <span>{initiative.location}, {initiative.counties?.name}</span>
           </div>
         </div>
 
@@ -81,107 +199,130 @@ const InitiativeDetail = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Users className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-2xl font-bold">{totalVotes.toLocaleString()}</span>
-                  <span className="text-muted-foreground">total votes</span>
+                  <span className="text-2xl font-bold text-foreground">{totalVotes.toLocaleString()}</span>
+                  <span className="text-muted-foreground">votes</span>
                 </div>
                 <div className="text-right">
-                  <div className="text-3xl font-bold text-vote-yes">{votePercentage}%</div>
-                  <div className="text-sm text-muted-foreground">in support</div>
+                  <div className="text-2xl font-bold text-primary">{votePercentage}%</div>
+                  <div className="text-sm text-muted-foreground">in favor</div>
                 </div>
               </div>
-
+              
               <div className="space-y-2">
-                <Progress value={votePercentage} className="h-3" />
+                <Progress value={votePercentage} className="h-2" />
                 <div className="flex justify-between text-sm">
-                  <span className="text-vote-yes font-medium">{mockInitiative.votesFor.toLocaleString()} Yes</span>
-                  <span className="text-vote-no font-medium">{mockInitiative.votesAgainst.toLocaleString()} No</span>
+                  <span className="text-muted-foreground">
+                    <ThumbsUp className="inline h-3 w-3 mr-1" />
+                    {(voteCounts?.votes_for || 0).toLocaleString()} for
+                  </span>
+                  <span className="text-muted-foreground">
+                    <ThumbsDown className="inline h-3 w-3 mr-1" />
+                    {(voteCounts?.votes_against || 0).toLocaleString()} against
+                  </span>
                 </div>
               </div>
             </div>
 
             <Separator />
 
-            {/* Voting Buttons */}
+            {/* Voting Actions */}
             {!hasVoted ? (
               <div className="space-y-3">
-                <p className="text-center font-medium">Cast your vote on this initiative</p>
-                <div className="grid grid-cols-2 gap-4">
+                <p className="text-sm font-semibold text-foreground">Vote</p>
+                <div className="grid grid-cols-3 gap-3">
                   <Button
-                    size="lg"
-                    className="bg-vote-yes hover:bg-vote-yes/90 text-white"
-                    onClick={() => handleVote("yes")}
+                    onClick={() => handleVote("for")}
+                    className="gap-2 bg-success hover:bg-success/90 text-success-foreground"
                   >
-                    <ThumbsUp className="h-5 w-5 mr-2" />
-                    Vote Yes
+                    <ThumbsUp className="h-4 w-4" />
+                    For
                   </Button>
                   <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-vote-no text-vote-no hover:bg-vote-no hover:text-white"
-                    onClick={() => handleVote("no")}
+                    onClick={() => handleVote("against")}
+                    variant="destructive"
+                    className="gap-2"
                   >
-                    <ThumbsDown className="h-5 w-5 mr-2" />
-                    Vote No
+                    <ThumbsDown className="h-4 w-4" />
+                    Against
+                  </Button>
+                  <Button
+                    onClick={() => handleVote("abstain")}
+                    variant="outline"
+                    className="gap-2"
+                  >
+                    Abstain
                   </Button>
                 </div>
               </div>
             ) : (
-              <div className="text-center space-y-2">
-                <div className="flex items-center justify-center gap-2 text-success">
-                  <CheckCircle2 className="h-6 w-6" />
-                  <span className="font-semibold text-lg">
-                    You voted {userVote === "yes" ? "Yes" : "No"}
-                  </span>
+              <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg">
+                <CheckCircle2 className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="font-semibold text-foreground">
+                    You voted: {userVote === "for" ? "For" : userVote === "against" ? "Against" : "Abstain"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Thank you for participating!</p>
                 </div>
-                <p className="text-sm text-muted-foreground">Your vote has been recorded</p>
               </div>
             )}
-
-            {/* Time Progress */}
-            <div className="space-y-2 pt-2">
-              <div className="flex justify-between text-sm text-muted-foreground">
-                <span>Voting period</span>
-                <span>{mockInitiative.daysLeft} of {mockInitiative.totalDays} days left</span>
-              </div>
-              <Progress value={daysProgress} className="h-1.5" />
-            </div>
           </div>
         </Card>
 
-        {/* Details Section */}
-        <div className="space-y-6">
+        {/* Overview Section */}
+        <section className="mb-8">
+          <h2 className="text-2xl font-bold text-foreground mb-4">Description</h2>
           <Card className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Overview</h2>
-            <p className="text-foreground leading-relaxed">{mockInitiative.description}</p>
+            <p className="text-muted-foreground leading-relaxed">
+              {initiative.description}
+            </p>
           </Card>
+        </section>
 
+        {/* Initiative Information */}
+        <section>
+          <h2 className="text-2xl font-bold text-foreground mb-4">Initiative Information</h2>
           <Card className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Full Details</h2>
-            <div className="text-foreground leading-relaxed whitespace-pre-line">
-              {mockInitiative.fullDetails}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Category</p>
+                <p className="font-semibold text-foreground capitalize">{initiative.category}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Location</p>
+                <p className="font-semibold text-foreground">{initiative.location}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">County</p>
+                <p className="font-semibold text-foreground">{initiative.counties?.name}</p>
+              </div>
+              {initiative.budget && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Estimated Budget</p>
+                  <p className="font-semibold text-foreground">{initiative.budget.toLocaleString()} RON</p>
+                </div>
+              )}
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Status</p>
+                <Badge variant="default" className="capitalize">{initiative.status}</Badge>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Start Date</p>
+                <p className="font-semibold text-foreground">
+                  {new Date(initiative.start_date).toLocaleDateString('en-US')}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">End Date</p>
+                <p className="font-semibold text-foreground">
+                  {new Date(initiative.end_date).toLocaleDateString('en-US')}
+                </p>
+              </div>
             </div>
           </Card>
+        </section>
 
-          <Card className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Initiative Information</h2>
-            <div className="space-y-3 text-foreground">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Sponsored by:</span>
-                <span className="font-medium">{mockInitiative.sponsor}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Date posted:</span>
-                <span className="font-medium">{mockInitiative.datePosted}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Status:</span>
-                <Badge>{mockInitiative.status}</Badge>
-              </div>
-            </div>
-          </Card>
-        </div>
+        {/* Comments Section */}
+        <InitiativeComments initiativeId={id!} />
       </main>
     </div>
   );

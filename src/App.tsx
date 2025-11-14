@@ -10,9 +10,10 @@ import Initiatives from "./pages/Initiatives";
 import InitiativeDetail from "./pages/InitiativeDetail";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
-import SignUp from "./pages/SignUp";
+import SignUp from "./pages/Signup";
 import TwoFactorAuth from "./pages/TwoFactorAuth";
 import DemoCodes from "./pages/DemoCodes";
+import Logout from "./pages/Logout";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const PublicRoutes = () => (
     <Route path="/login" element={<Login />} />
     <Route path="/signup" element={<SignUp />} />
     <Route path="/2fa" element={<TwoFactorAuth />} />
+    <Route path="/logout" element={<Logout />} />
     <Route path="*" element={<Navigate to="/login" replace />} />
   </Routes>
 );
@@ -80,6 +82,14 @@ const PrivateRoutes = () => (
       element={
         <ProtectedRoute>
           <DemoCodes />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/logout"
+      element={
+        <ProtectedRoute>
+          <Logout />
         </ProtectedRoute>
       }
     />
