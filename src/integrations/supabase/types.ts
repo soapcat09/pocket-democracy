@@ -14,6 +14,80 @@ export type Database = {
   }
   public: {
     Tables: {
+      counties: {
+        Row: {
+          cnp_code: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          cnp_code: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          cnp_code?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      initiatives: {
+        Row: {
+          category: string
+          county_id: string
+          created_at: string
+          created_by: string | null
+          description: string
+          end_date: string
+          id: string
+          location: string
+          start_date: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          county_id: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          end_date: string
+          id?: string
+          location: string
+          start_date?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          county_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          end_date?: string
+          id?: string
+          location?: string
+          start_date?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "initiatives_county_id_fkey"
+            columns: ["county_id"]
+            isOneToOne: false
+            referencedRelation: "counties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       phone_verifications: {
         Row: {
           attempts: number
@@ -92,12 +166,54 @@ export type Database = {
         }
         Relationships: []
       }
+      votes: {
+        Row: {
+          created_at: string
+          id: string
+          initiative_id: string
+          updated_at: string
+          user_id: string
+          vote_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          initiative_id: string
+          updated_at?: string
+          user_id: string
+          vote_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          initiative_id?: string
+          updated_at?: string
+          user_id?: string
+          vote_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "votes_initiative_id_fkey"
+            columns: ["initiative_id"]
+            isOneToOne: false
+            referencedRelation: "initiatives"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_initiative_vote_counts: {
+        Args: { initiative_uuid: string }
+        Returns: {
+          votes_abstain: number
+          votes_against: number
+          votes_for: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
