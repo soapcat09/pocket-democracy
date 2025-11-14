@@ -3,9 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { MapPin, Clock, Users, ArrowLeft, Filter, Building2, LogOut } from "lucide-react";
+import { MapPin, Clock, Users, Building2, LogOut } from "lucide-react";
 import { useTown } from "@/contexts/TownContext";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const categories = ["All", "Infrastructure", "Environment", "Education", "Healthcare", "Safety"];
 
@@ -99,12 +100,10 @@ const Initiatives = () => {
     return total > 0 ? Math.round((votesFor / total) * 100) : 0;
   };
 
-  const handleChangeTown = () => {
-    setSelectedTown(null);
-    navigate("/");
-    toast.info("Town changed", {
-      description: "Select a new town code to continue"
-    });
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    toast.success("Deconectat cu succes");
+    navigate("/auth");
   };
 
   if (!selectedTown) {
@@ -117,14 +116,9 @@ const Initiatives = () => {
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <Link to="/" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
-              <ArrowLeft className="h-5 w-5" />
-              <span className="font-semibold">Înapoi</span>
-            </Link>
-            
             <div className="flex items-center gap-3">
               <Building2 className="h-5 w-5 text-primary" />
-              <div className="text-center">
+              <div>
                 <h1 className="text-lg md:text-xl font-bold text-foreground">{selectedTown.name}</h1>
                 <p className="text-xs text-muted-foreground">{selectedTown.county}</p>
               </div>
@@ -133,10 +127,10 @@ const Initiatives = () => {
             <Button 
               variant="outline" 
               size="sm"
-              onClick={handleChangeTown}
+              onClick={handleSignOut}
             >
               <LogOut className="h-4 w-4 mr-2" />
-              Schimbă Orașul
+              Deconectare
             </Button>
           </div>
         </div>
