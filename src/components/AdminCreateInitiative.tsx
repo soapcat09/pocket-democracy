@@ -181,6 +181,21 @@ export const AdminCreateInitiative = () => {
             />
           </div>
 
+          <div>
+            <label className="text-sm font-medium">Buget Alocat (RON)</label>
+            <Input
+              type="number"
+              step="0.01"
+              min="0"
+              value={formData.budget}
+              onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+              placeholder="Exemplu: 250000.00"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Opțional - Bugetul estimat pentru inițiativă
+            </p>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium">Data începerii</label>
