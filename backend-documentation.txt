@@ -2,7 +2,7 @@
 DOCUMENTAȚIE BACKEND - PLATFORMĂ DE INIȚIATIVE LOCALE
 ================================================================================
 
-Această platformă folosește Lovable Cloud (bazat pe Supabase) pentru backend.
+Această platformă folosește Supabase pentru backend.
 
 ================================================================================
 STRUCTURĂ BAZĂ DE DATE
@@ -297,7 +297,7 @@ VITE_SUPABASE_URL - URL-ul proiectului Supabase
 VITE_SUPABASE_PUBLISHABLE_KEY - Cheia publică
 VITE_SUPABASE_PROJECT_ID - ID-ul proiectului
 
-Note: Aceste variabile sunt auto-generate de Lovable Cloud
+Note: Aceste variabile sunt necesare pentru conectarea la Supabase
 
 ================================================================================
 DEPLOYMENT
@@ -305,7 +305,7 @@ DEPLOYMENT
 
 - Edge functions sunt deployate automat
 - Database migrations se aplică automat
-- Frontend deployat pe Lovable hosting
+- Frontend deployat pe serverul de hosting
 - Backend rulează pe Supabase infrastructure
 
 ================================================================================
