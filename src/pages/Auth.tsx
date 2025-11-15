@@ -213,7 +213,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center p-4 w-screen overflow-x-hidden" style={{
+    <div className="min-h-screen flex items-center justify-center p-4 w-screen overflow-x-hidden" style={{
       background: "#7a2d2d",
       backgroundImage: "linear-gradient(90deg, rgba(122, 45, 45, 1) 0%, rgba(65, 30, 100, 1) 35%, rgba(9, 9, 121, 1) 50%, rgba(0, 100, 200, 1) 75%, rgba(0, 212, 255, 1) 100%)"
     }}>

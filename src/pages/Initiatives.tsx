@@ -12,7 +12,7 @@ import { AdminStats } from "@/components/AdminStats";
 import { AdminCreateInitiative } from "@/components/AdminCreateInitiative";
 import { useQuery } from "@tanstack/react-query";
 
-const categories = ["All", "infrastructure", "environment", "education", "health", "sports", "culture", "social", "other"];
+const categories = ["All", "infrastructură", "mediu", "educație", "sănătate", "sport", "cultură", "social", "altele"];
 
 const Initiatives = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -73,7 +73,15 @@ const Initiatives = () => {
 
   const filteredInitiatives = selectedCategory === "All" 
     ? initiatives 
-    : initiatives.filter(i => i.category === selectedCategory);
+    : initiatives.filter(i => i.category?.trim().toLowerCase() === selectedCategory.toLowerCase());
+
+  // Debug logging
+  useEffect(() => {
+    if (initiatives.length > 0) {
+      console.log('Available initiatives:', initiatives.map(i => ({ title: i.title, category: i.category })));
+      console.log('Filtered for category:', selectedCategory, 'Results:', filteredInitiatives.length);
+    }
+  }, [initiatives, selectedCategory, filteredInitiatives]);
 
   const getDaysLeft = (endDate: string) => {
     const end = new Date(endDate);

@@ -10,14 +10,14 @@ import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 
 const categories = [
-  'infrastructure',
-  'environment',
-  'education',
-  'health',
-  'culture',
-  'sports',
+  'infrastructură',
+  'mediu',
+  'educație',
+  'sănătate',
+  'cultură',
+  'sport',
   'social',
-  'other'
+  'altele'
 ];
 
 export const AdminCreateInitiative = () => {
