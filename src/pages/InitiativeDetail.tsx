@@ -165,27 +165,11 @@ const InitiativeDetail = () => {
   const hasVoted = !!userVote;
 
   return (
-
     <div className="min-h-screen" style={{ backgroundColor: '#EBE8E4' }}>
       {/* Header */}
       <header className="border-b border-border" style={{ backgroundColor: '#5150A6' }}>
-
-    <div className={`min-h-screen ${
-      theme === "light" ? "bg-gray-100" : "bg-gray-900"
-    }`}>
-      {/* Header */}
-      <header className={`border-b ${
-        theme === "light"
-          ? "bg-white border-gray-200"
-          : "bg-slate-900/80 border-slate-700"
-      }`}>
- 1ad8413d79186dd48ba78193ceb1d5234b1fda1e
         <div className="container mx-auto px-4 py-4">
-          <Link to="/initiatives" className={`flex items-center gap-2 transition-colors ${
-            theme === "light"
-              ? "text-gray-900 hover:text-pink-500"
-              : "text-white hover:text-pink-400"
-          }`}>
+          <Link to="/initiatives" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
             <ArrowLeft className="h-5 w-5" />
             <span className="font-semibold">Înapoi la Inițiative</span>
           </Link>
@@ -214,15 +198,7 @@ const InitiativeDetail = () => {
         </div>
 
         {/* Vote Card */}
-
         <Card className="p-6 mb-8" style={{ backgroundColor: '#D3D5ED' }}>
-
-        <Card className={`p-6 mb-8 ${
-          theme === "light"
-            ? "bg-white border-gray-200"
-            : "bg-gradient-to-br from-slate-800 to-slate-800/70 border-slate-700"
-        }`}>
- 1ad8413d79186dd48ba78193ceb1d5234b1fda1e
           <div className="space-y-6">
             {/* Vote Stats */}
             <div className="space-y-4">

@@ -298,16 +298,10 @@ const Auth = () => {
           backgroundRepeat: 'no-repeat',
         }}
       >
-      <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
-            Verificare 2FA
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center">
               Verificare 2FA
- 1ad8413d79186dd48ba78193ceb1d5234b1fda1e
             </CardTitle>
             <CardDescription className="text-center">
               Introdu codul de verificare din consolă
@@ -352,25 +346,22 @@ const Auth = () => {
   }
 
   return (
-    <div className={`min-h-screen flex items-center justify-center p-4 ${
-      theme === "light"
-        ? "bg-gray-100"
-        : "bg-gradient-to-br from-slate-900 via-blue-900 to-cyan-600"
-    }`}>
-      <Card className={`w-full max-w-md ${
-        theme === "light"
-          ? "bg-white border-gray-200"
-          : "bg-slate-900 border-slate-700"
-      }`}>
+    <div 
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{
+        backgroundImage: `url('/src/assets/background.png')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm">
         <CardHeader className="space-y-1">
-          <CardTitle className={`text-2xl font-bold text-center ${
-            theme === "light" ? "text-gray-900" : "text-white"
-          }`}>
+          <CardTitle className="text-2xl font-bold text-center text-gray-900">
             {isLogin ? "Autentificare" : "Creare cont"}
           </CardTitle>
-          <CardDescription className={`text-center ${
-            theme === "light" ? "text-gray-600" : "text-slate-400"
-          }`}>
+          <CardDescription className="text-center text-gray-600">
             {isLogin
               ? "Intră în cont pentru a accesa platformă"
               : "Creează un cont nou pentru a vota"}
