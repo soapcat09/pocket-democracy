@@ -94,16 +94,16 @@ const Initiatives = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ backgroundColor: '#EBE8E4' }}>
       {/* Header */}
-      <header className="border-b border-border bg-card">
+      <header className="border-b border-border" style={{ backgroundColor: '#5150A6' }}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
-              <Building2 className="h-5 w-5 text-primary" />
+              <Building2 className="h-5 w-5" style={{ color: '#FFAE00' }} />
               <div>
                 <h1 className="text-lg md:text-xl font-bold text-foreground">{selectedTown.name}</h1>
-                <p className="text-xs text-muted-foreground">{selectedTown.county}</p>
+                <p className="text-xs text-foreground">{selectedTown.county}</p>
               </div>
             </div>
 
@@ -160,7 +160,7 @@ const Initiatives = () => {
 
             return (
               <Link key={initiative.id} to={`/initiative/${initiative.id}`}>
-                <Card className="h-full p-6 hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-b from-card to-card/50 flex flex-col">
+                <Card className="h-full p-6 hover:shadow-lg transition-shadow cursor-pointer flex flex-col" style={{ backgroundColor: '#D3D5ED' }}>
                   <div className="flex flex-col flex-1 space-y-4">
                     {/* Header */}
                     <div className="space-y-2">

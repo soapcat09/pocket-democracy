@@ -70,7 +70,7 @@ export const InitiativeComments = ({ initiativeId }: InitiativeCommentsProps) =>
       </h2>
 
       {/* Add new comment */}
-      <Card className="p-6 mb-6">
+      <Card className="p-6 mb-6" style={{ backgroundColor: '#EDEDB3' }}>
         <h3 className="text-lg font-semibold text-foreground mb-3">Adaugă un comentariu</h3>
         <Textarea
           value={newComment}
@@ -78,7 +78,7 @@ export const InitiativeComments = ({ initiativeId }: InitiativeCommentsProps) =>
           placeholder="Scrie comentariul tău aici..."
           className="min-h-[120px] mb-3"
         />
-        <Button onClick={handleSubmitComment}>
+        <Button onClick={handleSubmitComment} style={{ backgroundColor: '#FFAE00', color: '#000' }}>
           Publică comentariu
         </Button>
       </Card>
@@ -95,7 +95,7 @@ export const InitiativeComments = ({ initiativeId }: InitiativeCommentsProps) =>
             />
           ))
         ) : (
-          <Card className="p-8 text-center">
+          <Card className="p-8 text-center" style={{ backgroundColor: '#EDEDB3' }}>
             <p className="text-muted-foreground">
               Nu există comentarii încă. Fii primul care comentează!
             </p>

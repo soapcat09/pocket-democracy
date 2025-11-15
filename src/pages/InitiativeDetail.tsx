@@ -163,9 +163,9 @@ const InitiativeDetail = () => {
   const hasVoted = !!userVote;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ backgroundColor: '#EBE8E4' }}>
       {/* Header */}
-      <header className="border-b border-border bg-card">
+      <header className="border-b border-border" style={{ backgroundColor: '#5150A6' }}>
         <div className="container mx-auto px-4 py-4">
           <Link to="/initiatives" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
             <ArrowLeft className="h-5 w-5" />
@@ -179,7 +179,7 @@ const InitiativeDetail = () => {
         <div className="space-y-4 mb-8">
           <div className="flex items-start gap-3 flex-wrap">
             <Badge variant="secondary" className="capitalize">{initiative.category}</Badge>
-            <Badge variant="outline" className="gap-1">
+            <Badge variant="outline" className="gap-1" style={{ backgroundColor: '#fff' }}>
               <Clock className="h-3 w-3" />
               {daysLeft} zile rămase
             </Badge>
@@ -192,7 +192,7 @@ const InitiativeDetail = () => {
         </div>
 
         {/* Vote Card */}
-        <Card className="p-6 mb-8 bg-gradient-to-br from-card to-muted/20">
+        <Card className="p-6 mb-8" style={{ backgroundColor: '#D3D5ED' }}>
           <div className="space-y-6">
             {/* Vote Stats */}
             <div className="space-y-4">
@@ -209,7 +209,19 @@ const InitiativeDetail = () => {
               </div>
               
               <div className="space-y-2">
-                <Progress value={votePercentage} className="h-2" />
+                <div className="flex h-4 bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-green-500 h-full" 
+                    style={{ width: `${votePercentage}%` }}
+                  />
+                  <div 
+                    className="bg-red-500 h-full" 
+                    style={{ width: `${totalVotes > 0 ? Math.round(((voteCounts?.votes_against || 0) / totalVotes) * 100) : 0}%` }}
+                  />
+                  <div 
+                    className="bg-gray-400 h-full flex-1"
+                  />
+                </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">
                     <ThumbsUp className="inline h-3 w-3 mr-1" />
@@ -271,8 +283,8 @@ const InitiativeDetail = () => {
         {/* Overview Section */}
         <section className="mb-8">
           <h2 className="text-2xl font-bold text-foreground mb-4">Descriere</h2>
-          <Card className="p-6">
-            <p className="text-muted-foreground leading-relaxed">
+          <Card className="p-6" style={{ backgroundColor: '#D3D5ED' }}>
+            <p className="text-foreground leading-relaxed">
               {initiative.description}
             </p>
           </Card>
@@ -281,7 +293,7 @@ const InitiativeDetail = () => {
         {/* Initiative Information */}
         <section>
           <h2 className="text-2xl font-bold text-foreground mb-4">Informații Inițiativă</h2>
-          <Card className="p-6">
+          <Card className="p-6" style={{ backgroundColor: '#D3D5ED' }}>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Categorie</p>

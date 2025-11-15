@@ -296,10 +296,10 @@ const Auth = () => {
           backgroundRepeat: 'no-repeat',
         }}
       >
-        <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">
-              Verificare 2FA
+      <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">
+            Verificare 2FA
             </CardTitle>
             <CardDescription className="text-center">
               Introdu codul de verificare din consolă

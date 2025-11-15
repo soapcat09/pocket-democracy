@@ -153,7 +153,7 @@ export const Comment = ({ comment, initiativeId, onReplyAdded, level = 0 }: Comm
 
   return (
     <div style={{ marginLeft }}>
-      <Card className="p-4 mb-3 bg-card">
+      <Card className="p-4 mb-3" style={{ backgroundColor: '#EDEDB3' }}>
         <div className="flex gap-3">
           {/* Vote buttons */}
           <div className="flex flex-col items-center gap-1">
