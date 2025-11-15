@@ -65,11 +65,11 @@ const Settings = () => {
   });
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Avatar upload disabled - column not yet added to database
+   
   };
 
   const handleUploadAvatar = async () => {
-    // Avatar upload disabled - column not yet added to database
+  
   };
 
   const handleThemeChange = (newTheme: "light" | "dark") => {
