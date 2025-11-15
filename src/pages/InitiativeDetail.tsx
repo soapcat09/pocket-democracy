@@ -10,10 +10,12 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { InitiativeComments } from "@/components/InitiativeComments";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const InitiativeDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { theme } = useTheme();
   const [userVote, setUserVote] = useState<"for" | "against" | "abstain" | null>(null);
 
   // Fetch initiative details
@@ -163,11 +165,27 @@ const InitiativeDetail = () => {
   const hasVoted = !!userVote;
 
   return (
+
     <div className="min-h-screen" style={{ backgroundColor: '#EBE8E4' }}>
       {/* Header */}
       <header className="border-b border-border" style={{ backgroundColor: '#5150A6' }}>
+
+    <div className={`min-h-screen ${
+      theme === "light" ? "bg-gray-100" : "bg-gray-900"
+    }`}>
+      {/* Header */}
+      <header className={`border-b ${
+        theme === "light"
+          ? "bg-white border-gray-200"
+          : "bg-slate-900/80 border-slate-700"
+      }`}>
+ 1ad8413d79186dd48ba78193ceb1d5234b1fda1e
         <div className="container mx-auto px-4 py-4">
-          <Link to="/initiatives" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+          <Link to="/initiatives" className={`flex items-center gap-2 transition-colors ${
+            theme === "light"
+              ? "text-gray-900 hover:text-pink-500"
+              : "text-white hover:text-pink-400"
+          }`}>
             <ArrowLeft className="h-5 w-5" />
             <span className="font-semibold">Înapoi la Inițiative</span>
           </Link>
@@ -184,27 +202,43 @@ const InitiativeDetail = () => {
               {daysLeft} zile rămase
             </Badge>
           </div>
-          <h1 className="text-4xl font-bold text-foreground">{initiative.title}</h1>
-          <div className="flex items-center gap-2 text-muted-foreground">
+          <h1 className={`text-4xl font-bold ${
+            theme === "light" ? "text-gray-900" : "text-white"
+          }`}>{initiative.title}</h1>
+          <div className={`flex items-center gap-2 ${
+            theme === "light" ? "text-gray-600" : "text-slate-400"
+          }`}>
             <MapPin className="h-4 w-4" />
             <span>{initiative.location}, {initiative.counties?.name}</span>
           </div>
         </div>
 
         {/* Vote Card */}
+
         <Card className="p-6 mb-8" style={{ backgroundColor: '#D3D5ED' }}>
+
+        <Card className={`p-6 mb-8 ${
+          theme === "light"
+            ? "bg-white border-gray-200"
+            : "bg-gradient-to-br from-slate-800 to-slate-800/70 border-slate-700"
+        }`}>
+ 1ad8413d79186dd48ba78193ceb1d5234b1fda1e
           <div className="space-y-6">
             {/* Vote Stats */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-2xl font-bold text-foreground">{totalVotes.toLocaleString()}</span>
-                  <span className="text-muted-foreground">voturi</span>
+                  <Users className={`h-5 w-5 ${
+                    theme === "light" ? "text-gray-500" : "text-slate-400"
+                  }`} />
+                  <span className={`text-2xl font-bold ${
+                    theme === "light" ? "text-gray-900" : "text-white"
+                  }`}>{totalVotes.toLocaleString()}</span>
+                  <span className={theme === "light" ? "text-gray-600" : "text-slate-400"}>voturi</span>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-primary">{votePercentage}%</div>
-                  <div className="text-sm text-muted-foreground">în favoare</div>
+                  <div className="text-2xl font-bold text-pink-500">{votePercentage}%</div>
+                  <div className={`text-sm ${theme === "light" ? "text-gray-600" : "text-slate-400"}`}>în favoare</div>
                 </div>
               </div>
               

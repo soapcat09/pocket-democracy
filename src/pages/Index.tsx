@@ -7,12 +7,14 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { getTownCodeFromCnpCounty } from "@/lib/cnp-counties";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { setSelectedTown } = useTown();
+  const { theme } = useTheme();
 
   useEffect(() => {
     const initializeUser = async () => {
@@ -84,10 +86,16 @@ const Index = () => {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className={`min-h-screen flex items-center justify-center ${
+        theme === "light" ? "bg-gray-100" : "bg-gray-900"
+      }`}>
         <div className="text-center space-y-4">
-          <Vote className="h-12 w-12 text-primary mx-auto animate-pulse" />
-          <p className="text-muted-foreground">Se încarcă...</p>
+          <Vote className={`h-12 w-12 mx-auto animate-pulse ${
+            theme === "light" ? "text-pink-500" : "text-pink-400"
+          }`} />
+          <p className={theme === "light" ? "text-gray-600" : "text-slate-400"}>
+            Se încarcă...
+          </p>
         </div>
       </div>
     );

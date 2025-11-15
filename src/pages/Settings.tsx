@@ -1,227 +1,345 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
+import { LogOut, Moon, Sun, User, MessageSquare, ArrowLeft } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const Settings = () => {
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [twoFAEnabled, setTwoFAEnabled] = useState(false);
-  const [verificationCode, setVerificationCode] = useState("");
-  const [showVerificationInput, setShowVerificationInput] = useState(false);
-  const [generatedCode, setGeneratedCode] = useState("");
 
   useEffect(() => {
-    checkUser();
-  }, []);
-
-  const checkUser = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
+    // Get current user
+    supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) {
         navigate("/auth");
         return;
       }
-
       setUser(user);
+    });
+  }, [navigate]);
 
-      const { data: profileData } = await supabase
+  const { data: userProfile, refetch: refetchProfile } = useQuery({
+    queryKey: ["profile", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+
+      const { data, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("user_id", user.id)
         .single();
 
-      if (profileData) {
-        setProfile(profileData);
-        setTwoFAEnabled(profileData.twofa_sms_enabled || false);
-      }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    } finally {
-      setLoading(false);
-    }
+      if (error) throw error;
+      setProfile(data);
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const { data: comments = [] } = useQuery({
+    queryKey: ["user-comments", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from("initiative_comments")
+        .select("*, initiatives(title)")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Avatar upload disabled - column not yet added to database
   };
 
-  const generateVerificationCode = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+  const handleUploadAvatar = async () => {
+    // Avatar upload disabled - column not yet added to database
   };
 
-  const handleToggle2FA = async (checked: boolean) => {
-    if (checked) {
-      // Activare 2FA - generează și afișează cod în consolă
-      const code = generateVerificationCode();
-      setGeneratedCode(code);
-      setShowVerificationInput(true);
-      console.log("🔐 COD VERIFICARE 2FA (MOD DEZVOLTARE):", code);
-      toast.info("Verifică consola pentru codul de verificare");
-    } else {
-      // Dezactivare 2FA
-      try {
-        const { error } = await supabase
-          .from("profiles")
-          .update({ twofa_sms_enabled: false })
-          .eq("user_id", user.id);
-
-        if (error) throw error;
-
-        setTwoFAEnabled(false);
-        toast.success("2FA dezactivat cu succes");
-      } catch (error: any) {
-        toast.error("Eroare la dezactivarea 2FA");
-      }
-    }
+  const handleThemeChange = (newTheme: "light" | "dark") => {
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+    toast.success(`Theme changed to ${newTheme}`);
   };
 
-  const handleVerifyCode = async () => {
-    if (verificationCode === generatedCode) {
-      try {
-        const { error } = await supabase
-          .from("profiles")
-          .update({ twofa_sms_enabled: true })
-          .eq("user_id", user.id);
-
-        if (error) throw error;
-
-        setTwoFAEnabled(true);
-        setShowVerificationInput(false);
-        setVerificationCode("");
-        toast.success("2FA activat cu succes!");
-      } catch (error: any) {
-        toast.error("Eroare la activarea 2FA");
-      }
-    } else {
-      toast.error("Cod incorect");
-    }
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    toast.success("Logged out successfully");
+    navigate("/auth");
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Se încarcă...</p>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-2xl mx-auto space-y-6 py-8">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Setări</h1>
-          <Button variant="outline" onClick={() => navigate("/")}>
-            Înapoi
-          </Button>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Informații Cont</CardTitle>
-            <CardDescription>Detaliile contului tău</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label>Email</Label>
-              <p className="text-sm text-muted-foreground">{user?.email}</p>
-            </div>
-            {profile && (
-              <>
-                <div>
-                  <Label>Nume Complet</Label>
-                  <p className="text-sm text-muted-foreground">{profile.full_name}</p>
-                </div>
-                <div>
-                  <Label>Telefon</Label>
-                  <p className="text-sm text-muted-foreground">{profile.phone_number}</p>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Autentificare în Doi Pași (2FA)</CardTitle>
-            <CardDescription>
-              Adaugă un nivel suplimentar de securitate contului tău
-              <br />
-              <span className="text-xs text-yellow-600">
-                Mod Dezvoltare: Codurile vor apărea în consolă
-              </span>
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Activează 2FA prin SMS</Label>
-                <p className="text-sm text-muted-foreground">
-                  Primește coduri de verificare la fiecare autentificare
-                </p>
-              </div>
-              <Switch
-                checked={twoFAEnabled}
-                onCheckedChange={handleToggle2FA}
-              />
-            </div>
-
-            {showVerificationInput && (
-              <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
-                <div className="space-y-2">
-                  <Label htmlFor="verificationCode">Cod de Verificare</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Verifică consola pentru cod (F12 → Console)
-                  </p>
-                  <Input
-                    id="verificationCode"
-                    type="text"
-                    placeholder="000000"
-                    value={verificationCode}
-                    onChange={(e) => setVerificationCode(e.target.value)}
-                    maxLength={6}
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button onClick={handleVerifyCode} className="flex-1">
-                    Verifică Cod
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setShowVerificationInput(false);
-                      setVerificationCode("");
-                    }}
-                  >
-                    Anulează
-                  </Button>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Acțiuni Cont</CardTitle>
-          </CardHeader>
-          <CardContent>
+    <div className={`min-h-screen w-screen overflow-x-hidden ${
+      theme === "light" 
+        ? "bg-gray-100" 
+        : "bg-gray-900"
+    }`}>
+      {/* Header */}
+      <header className={`border-b ${
+        theme === "light"
+          ? "bg-white border-gray-200"
+          : "bg-slate-900/80 border-slate-700"
+      }`}>
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center gap-4">
             <Button
-              variant="outline"
-              onClick={async () => {
-                await supabase.auth.signOut();
-                navigate("/auth");
-              }}
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(-1)}
+              className={theme === "light" ? "text-gray-900 hover:bg-gray-100" : "text-white hover:bg-slate-800"}
             >
-              Deconectare
+              <ArrowLeft className="h-5 w-5" />
             </Button>
-          </CardContent>
-        </Card>
-      </div>
+            <h1 className={`text-2xl font-bold ${theme === "light" ? "text-gray-900" : "text-white"}`}>Settings</h1>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8">
+        <div className="max-w-2xl">
+          <Tabs defaultValue="account" className="w-full">
+            <TabsList className={`grid w-full grid-cols-4 ${
+              theme === "light"
+                ? "bg-gray-200"
+                : "bg-slate-800"
+            }`}>
+              <TabsTrigger value="account" className={`${
+                theme === "light" ? "text-gray-900" : "text-slate-300"
+              } data-[state=active]:${theme === "light" ? "bg-white text-gray-900" : "bg-slate-700 text-white"}`}>
+                <User className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Account</span>
+              </TabsTrigger>
+              <TabsTrigger value="comments" className={`${
+                theme === "light" ? "text-gray-900" : "text-slate-300"
+              } data-[state=active]:${theme === "light" ? "bg-white text-gray-900" : "bg-slate-700 text-white"}`}>
+                <MessageSquare className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Comments</span>
+              </TabsTrigger>
+              <TabsTrigger value="theme" className={`${
+                theme === "light" ? "text-gray-900" : "text-slate-300"
+              } data-[state=active]:${theme === "light" ? "bg-white text-gray-900" : "bg-slate-700 text-white"}`}>
+                <Sun className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Theme</span>
+              </TabsTrigger>
+              <TabsTrigger value="logout" className={`${
+                theme === "light" ? "text-gray-900" : "text-slate-300"
+              } data-[state=active]:${theme === "light" ? "bg-white text-gray-900" : "bg-slate-700 text-white"}`}>
+                <LogOut className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Logout</span>
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Account Tab */}
+            <TabsContent value="account" className="mt-6">
+              <Card className={`${
+                theme === "light"
+                  ? "bg-white border-gray-200"
+                  : "bg-slate-800 border-slate-700"
+              }`}>
+                <CardHeader>
+                  <CardTitle className={theme === "light" ? "text-gray-900" : "text-white"}>Account Settings</CardTitle>
+                  <CardDescription className={theme === "light" ? "text-gray-600" : "text-slate-300"}>
+                    Edit your profile information
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* User Info */}
+                  <div className="space-y-4">
+                    <div>
+                      <Label className={theme === "light" ? "text-gray-900" : "text-white"}>Full Name</Label>
+                      <Input
+                        disabled
+                        value={userProfile?.full_name || ""}
+                        className={theme === "light"
+                          ? "mt-1 bg-gray-100 border-gray-300 text-gray-600"
+                          : "mt-1 bg-slate-700 border-slate-600 text-slate-300"
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label className={theme === "light" ? "text-gray-900" : "text-white"}>Email</Label>
+                      <Input
+                        disabled
+                        value={user?.email || ""}
+                        className={theme === "light"
+                          ? "mt-1 bg-gray-100 border-gray-300 text-gray-600"
+                          : "mt-1 bg-slate-700 border-slate-600 text-slate-300"
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label className={theme === "light" ? "text-gray-900" : "text-white"}>County</Label>
+                      <Input
+                        disabled
+                        value={userProfile?.county || ""}
+                        className={theme === "light"
+                          ? "mt-1 bg-gray-100 border-gray-300 text-gray-600"
+                          : "mt-1 bg-slate-700 border-slate-600 text-slate-300"
+                        }
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Comments Tab */}
+            <TabsContent value="comments" className="mt-6">
+              <Card className={`${
+                theme === "light"
+                  ? "bg-white border-gray-200"
+                  : "bg-slate-800 border-slate-700"
+              }`}>
+                <CardHeader>
+                  <CardTitle className={theme === "light" ? "text-gray-900" : "text-white"}>Your Comments</CardTitle>
+                  <CardDescription className={theme === "light" ? "text-gray-600" : "text-slate-300"}>
+                    View all comments you've posted
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {comments.length === 0 ? (
+                    <p className={`text-center py-8 ${
+                      theme === "light" ? "text-gray-500" : "text-slate-400"
+                    }`}>
+                      No comments posted yet
+                    </p>
+                  ) : (
+                    <div className="space-y-4">
+                      {comments.map((comment: any) => (
+                        <div
+                          key={comment.id}
+                          className={`p-4 rounded-lg border ${
+                            theme === "light"
+                              ? "bg-gray-50 border-gray-200"
+                              : "bg-slate-700 border-slate-600"
+                          }`}
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <p className={`text-sm font-semibold ${
+                              theme === "light" ? "text-pink-600" : "text-pink-400"
+                            }`}>
+                              On: {comment.initiatives?.title}
+                            </p>
+                            <p className={`text-xs ${
+                              theme === "light" ? "text-gray-500" : "text-slate-400"
+                            }`}>
+                              {new Date(comment.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <p className={`text-sm ${
+                            theme === "light" ? "text-gray-900" : "text-white"
+                          }`}>{comment.content}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Theme Tab */}
+            <TabsContent value="theme" className="mt-6">
+              <Card className={`${
+                theme === "light"
+                  ? "bg-white border-gray-200"
+                  : "bg-slate-800 border-slate-700"
+              }`}>
+                <CardHeader>
+                  <CardTitle className={theme === "light" ? "text-gray-900" : "text-white"}>Theme Settings</CardTitle>
+                  <CardDescription className={theme === "light" ? "text-gray-600" : "text-slate-300"}>
+                    Choose your preferred theme
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <Button
+                      onClick={() => handleThemeChange("dark")}
+                      variant={theme === "dark" ? "default" : "outline"}
+                      className={`h-24 flex flex-col items-center justify-center gap-2 ${
+                        theme === "dark"
+                          ? "bg-pink-500 hover:bg-pink-600 text-white"
+                          : theme === "light"
+                          ? "bg-gray-100 border-gray-300 text-gray-900 hover:bg-gray-200"
+                          : "bg-slate-700 border-slate-600 text-white hover:bg-slate-600"
+                      }`}
+                    >
+                      <Moon className="h-6 w-6" />
+                      <span>Dark Theme</span>
+                    </Button>
+                    <Button
+                      onClick={() => handleThemeChange("light")}
+                      variant={theme === "light" ? "default" : "outline"}
+                      className={`h-24 flex flex-col items-center justify-center gap-2 ${
+                        theme === "light"
+                          ? "bg-pink-500 hover:bg-pink-600 text-white"
+                          : theme === "dark"
+                          ? "bg-slate-700 border-slate-600 text-white hover:bg-slate-600"
+                          : "bg-gray-100 border-gray-300 text-gray-900 hover:bg-gray-200"
+                      }`}
+                    >
+                      <Sun className="h-6 w-6" />
+                      <span>Light Theme</span>
+                    </Button>
+                  </div>
+                  <p className={`text-sm ${
+                    theme === "light" ? "text-gray-600" : "text-slate-400"
+                  }`}>
+                    Current theme: <span className={theme === "light" ? "text-gray-900" : "text-white"}>
+                      {theme === "light" ? "Light" : "Dark"}
+                    </span>
+                  </p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Logout Tab */}
+            <TabsContent value="logout" className="mt-6">
+              <Card className={`${
+                theme === "light"
+                  ? "bg-white border-gray-200"
+                  : "bg-slate-800 border-slate-700"
+              }`}>
+                <CardHeader>
+                  <CardTitle className={theme === "light" ? "text-gray-900" : "text-white"}>Logout</CardTitle>
+                  <CardDescription className={theme === "light" ? "text-gray-600" : "text-slate-300"}>
+                    Sign out of your account
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className={`mb-6 ${
+                    theme === "light" ? "text-gray-700" : "text-slate-300"
+                  }`}>
+                    Are you sure you want to logout? You'll need to sign in again to access your account.
+                  </p>
+                  <Button
+                    onClick={handleSignOut}
+                    className="w-full bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </Button>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </main>
     </div>
   );
 };
