@@ -175,6 +175,19 @@ const Auth = () => {
           return;
         }
 
+        // Check if CNP already exists
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('cnp')
+          .eq('cnp', validation.data.cnp)
+          .single();
+
+        if (existingProfile) {
+          toast.error("Acest CNP este deja înregistrat. Dacă ai uitat parola, folosește opțiunea 'Ai uitat parola?'");
+          setLoading(false);
+          return;
+        }
+
         // Extract birth date from CNP
         const cnpValue = validation.data.cnp;
         const yy = parseInt(cnpValue.substring(1, 3));
@@ -226,9 +239,16 @@ const Auth = () => {
             });
 
           if (profileError) {
-            toast.error("Eroare la crearea profilului: " + profileError.message);
+            // If CNP is duplicate, provide helpful error
+            if (profileError.message.includes("cnp")) {
+              toast.error("Acest CNP este deja înregistrat. Dacă ai uitat parola, folosește opțiunea 'Ai uitat parola?'");
+            } else {
+              toast.error("Eroare la crearea profilului: " + profileError.message);
+            }
+            // Clean up the auth user if profile creation failed
+            await supabase.auth.signOut();
           } else {
-            toast.success("Cont creat cu succes!");
+            toast.success("Cont creat cu succes! Verifică email-ul pentru confirmare.");
           }
         }
       }
