@@ -140,7 +140,7 @@ const InitiativeDetail = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted-foreground">Se încarcă...</p>
+          <p className="text-white">Se încarcă...</p>
         </div>
       </div>
     );
@@ -150,7 +150,7 @@ const InitiativeDetail = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted-foreground">Inițiativa nu a fost găsită</p>
+          <p className="text-white">Inițiativa nu a fost găsită</p>
           <Button onClick={() => navigate("/initiatives")} className="mt-4">
             Înapoi la inițiative
           </Button>
@@ -165,11 +165,21 @@ const InitiativeDetail = () => {
   const hasVoted = !!userVote;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#EBE8E4' }}>
+    <div className={`min-h-screen w-screen overflow-x-hidden ${
+      theme === "light" ? "bg-gray-100" : "bg-gray-900"
+    }`}>
       {/* Header */}
-      <header className="border-b border-border" style={{ backgroundColor: '#5150A6' }}>
+      <header className={`border-b ${
+        theme === "light"
+          ? "bg-white border-gray-200"
+          : "bg-slate-900/80 border-slate-700"
+      }`}>
         <div className="container mx-auto px-4 py-4">
-          <Link to="/initiatives" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+          <Link to="/initiatives" className={`flex items-center gap-2 transition-colors ${
+            theme === "light"
+              ? "text-gray-900 hover:text-pink-500"
+              : "text-white hover:text-pink-400"
+          }`}>
             <ArrowLeft className="h-5 w-5" />
             <span className="font-semibold">Înapoi la Inițiative</span>
           </Link>
@@ -190,7 +200,7 @@ const InitiativeDetail = () => {
             theme === "light" ? "text-gray-900" : "text-white"
           }`}>{initiative.title}</h1>
           <div className={`flex items-center gap-2 ${
-            theme === "light" ? "text-gray-600" : "text-slate-400"
+            theme === "light" ? "text-gray-600" : "text-white"
           }`}>
             <MapPin className="h-4 w-4" />
             <span>{initiative.location}, {initiative.counties?.name}</span>
@@ -198,23 +208,29 @@ const InitiativeDetail = () => {
         </div>
 
         {/* Vote Card */}
-        <Card className="p-6 mb-8" style={{ backgroundColor: '#D3D5ED' }}>
+        <Card className={`p-6 mb-8 ${
+          theme === "light"
+            ? "bg-white border-gray-200"
+            : "border-slate-700"
+        }`} style={theme === "dark" ? { backgroundColor: "#D3D5ED" } : undefined}>
           <div className="space-y-6">
             {/* Vote Stats */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Users className={`h-5 w-5 ${
-                    theme === "light" ? "text-gray-500" : "text-slate-400"
+                    theme === "light" ? "text-gray-500" : "text-gray-700"
                   }`} />
                   <span className={`text-2xl font-bold ${
-                    theme === "light" ? "text-gray-900" : "text-white"
+                    theme === "light" ? "text-gray-900" : "text-gray-900"
                   }`}>{totalVotes.toLocaleString()}</span>
-                  <span className={theme === "light" ? "text-gray-600" : "text-slate-400"}>voturi</span>
+                  <span className={theme === "light" ? "text-gray-600" : "text-gray-700"}>voturi</span>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-pink-500">{votePercentage}%</div>
-                  <div className={`text-sm ${theme === "light" ? "text-gray-600" : "text-slate-400"}`}>în favoare</div>
+                  <div className={`text-2xl font-bold ${
+                    (voteCounts?.votes_for || 0) > (voteCounts?.votes_against || 0) ? "text-green-500" : "text-red-500"
+                  }`}>{votePercentage}%</div>
+                  <div className={`text-sm ${theme === "light" ? "text-gray-600" : "text-gray-700"}`}>în favoare</div>
                 </div>
               </div>
               
@@ -233,11 +249,11 @@ const InitiativeDetail = () => {
                   />
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">
+                  <span className={theme === "light" ? "text-gray-600" : "text-gray-700"}>
                     <ThumbsUp className="inline h-3 w-3 mr-1" />
                     {(voteCounts?.votes_for || 0).toLocaleString()} pentru
                   </span>
-                  <span className="text-muted-foreground">
+                  <span className={theme === "light" ? "text-gray-600" : "text-gray-700"}>
                     <ThumbsDown className="inline h-3 w-3 mr-1" />
                     {(voteCounts?.votes_against || 0).toLocaleString()} împotrivă
                   </span>
@@ -250,7 +266,7 @@ const InitiativeDetail = () => {
             {/* Voting Actions */}
             {!hasVoted ? (
               <div className="space-y-3">
-                <p className="text-sm font-semibold text-foreground">Votează</p>
+                <p className={`text-sm font-semibold ${theme === "light" ? "text-gray-900" : "text-gray-900"}`}>Votează</p>
                 <div className="grid grid-cols-3 gap-3">
                   <Button
                     onClick={() => handleVote("for")}
@@ -280,10 +296,10 @@ const InitiativeDetail = () => {
               <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg">
                 <CheckCircle2 className="h-5 w-5 text-primary" />
                 <div>
-                  <p className="font-semibold text-foreground">
+                  <p className="font-semibold text-gray-900">
                     Ai votat: {userVote === "for" ? "Pentru" : userVote === "against" ? "Împotrivă" : "Abținere"}
                   </p>
-                  <p className="text-sm text-muted-foreground">Mulțumim pentru participare!</p>
+                  <p className="text-sm text-gray-700">Mulțumim pentru participare!</p>
                 </div>
               </div>
             )}
@@ -292,9 +308,9 @@ const InitiativeDetail = () => {
 
         {/* Overview Section */}
         <section className="mb-8">
-          <h2 className="text-2xl font-bold text-foreground mb-4">Descriere</h2>
+          <h2 className={`text-2xl font-bold mb-4 ${theme === "light" ? "text-gray-900" : "text-white"}`}>Descriere</h2>
           <Card className="p-6" style={{ backgroundColor: '#D3D5ED' }}>
-            <p className="text-foreground leading-relaxed">
+            <p className="text-gray-900 leading-relaxed">
               {initiative.description}
             </p>
           </Card>
@@ -302,40 +318,40 @@ const InitiativeDetail = () => {
 
         {/* Initiative Information */}
         <section>
-          <h2 className="text-2xl font-bold text-foreground mb-4">Informații Inițiativă</h2>
+          <h2 className={`text-2xl font-bold mb-4 ${theme === "light" ? "text-gray-900" : "text-white"}`}>Informații Inițiativă</h2>
           <Card className="p-6" style={{ backgroundColor: '#D3D5ED' }}>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Categorie</p>
-                <p className="font-semibold text-foreground capitalize">{initiative.category}</p>
+                <p className="text-sm text-gray-600 mb-1">Categorie</p>
+                <p className="font-semibold text-gray-900 capitalize">{initiative.category}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Locație</p>
-                <p className="font-semibold text-foreground">{initiative.location}</p>
+                <p className="text-sm mb-1 text-gray-600">Locație</p>
+                <p className="font-semibold text-gray-900">{initiative.location}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Județ</p>
-                <p className="font-semibold text-foreground">{initiative.counties?.name}</p>
+                <p className="text-sm mb-1 text-gray-600">Județ</p>
+                <p className="font-semibold text-gray-900">{initiative.counties?.name}</p>
               </div>
               {initiative.budget && (
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Buget estimat</p>
-                  <p className="font-semibold text-foreground">{initiative.budget.toLocaleString()} RON</p>
+                  <p className="text-sm mb-1 text-gray-600">Buget estimat</p>
+                  <p className="font-semibold text-gray-900">{initiative.budget.toLocaleString()} RON</p>
                 </div>
               )}
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Status</p>
+                <p className="text-sm mb-1 text-gray-600">Status</p>
                 <Badge variant="default" className="capitalize">{initiative.status}</Badge>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Data început</p>
-                <p className="font-semibold text-foreground">
+                <p className="text-sm mb-1 text-gray-600">Data început</p>
+                <p className="font-semibold text-gray-900">
                   {new Date(initiative.start_date).toLocaleDateString('ro-RO')}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Data sfârșit</p>
-                <p className="font-semibold text-foreground">
+                <p className="text-sm mb-1 text-gray-600">Data sfârșit</p>
+                <p className="font-semibold text-gray-900">
                   {new Date(initiative.end_date).toLocaleDateString('ro-RO')}
                 </p>
               </div>

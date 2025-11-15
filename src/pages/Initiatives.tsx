@@ -108,7 +108,7 @@ const Initiatives = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
-              <Building2 className={`h-5 w-5 ${theme === "light" ? "text-pink-500" : "text-pink-400"}`} />
+              <Building2 className="h-5 w-5" style={{ color: "#FFAE00" }} />
               <div>
                 <h1 className={`text-lg md:text-xl font-bold ${theme === "light" ? "text-gray-900" : "text-white"}`}>{selectedTown.name}</h1>
                 <p className={`text-xs ${theme === "light" ? "text-gray-600" : "text-slate-400"}`}>{selectedTown.county}</p>
@@ -119,10 +119,8 @@ const Initiatives = () => {
               <Button 
                 size="sm"
                 onClick={() => navigate("/settings")}
-                className={theme === "light"
-                  ? "bg-pink-500 hover:bg-pink-600 text-white"
-                  : "bg-pink-500 hover:bg-pink-600 text-white"
-                }
+                className="text-gray-900"
+                style={{ backgroundColor: "#FFAE00" }}
               >
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
@@ -168,12 +166,21 @@ const Initiatives = () => {
                 className={`whitespace-nowrap ${
                   selectedCategory === category
                     ? theme === "light"
-                      ? "bg-pink-500 hover:bg-pink-600 text-white"
-                      : "bg-pink-500 hover:bg-pink-600 text-white"
+                      ? "text-gray-900"
+                      : "text-gray-900"
                     : theme === "light"
                     ? "border-gray-300 text-gray-900 hover:bg-gray-100"
-                    : "border-slate-500 text-slate-900 bg-slate-700 hover:bg-slate-600"
+                    : "text-gray-900 transition-colors"
                 }`}
+                style={selectedCategory === category && theme === "dark" ? { 
+                  backgroundColor: "#FFAE00"
+                } : selectedCategory !== category && theme === "dark" ? { 
+                  backgroundColor: "#EDEDB3"
+                } : selectedCategory === category && theme === "light" ? {
+                  backgroundColor: "#FFAE00"
+                } : undefined}
+                onMouseEnter={(e) => selectedCategory !== category && theme === "dark" && (e.currentTarget.style.backgroundColor = "#FFAE00")}
+                onMouseLeave={(e) => selectedCategory !== category && theme === "dark" && (e.currentTarget.style.backgroundColor = "#EDEDB3")}
               >
                 {category}
               </Button>
@@ -202,8 +209,8 @@ const Initiatives = () => {
                 <Card className={`h-full p-6 hover:shadow-lg transition-shadow cursor-pointer flex flex-col ${
                   theme === "light"
                     ? "bg-white border-gray-200"
-                    : "bg-gradient-to-b from-slate-800 to-slate-800/70 border-slate-700"
-                }`}>
+                    : "border-slate-700"
+                }`} style={theme === "dark" ? { backgroundColor: "#D3D5ED" } : undefined}>
                   <div className="flex flex-col flex-1 space-y-4">
                     {/* Header */}
                     <div className="space-y-2">
@@ -212,14 +219,14 @@ const Initiatives = () => {
                           {initiative.category}
                         </Badge>
                         <div className={`flex items-center gap-1 text-xs ${
-                          theme === "light" ? "text-gray-500" : "text-slate-400"
+                          theme === "light" ? "text-gray-500" : "text-gray-600"
                         }`}>
                           <Clock className="h-3 w-3" />
                           {daysLeft}d rămase
                         </div>
                       </div>
                       <h3 className={`font-bold text-lg leading-tight line-clamp-2 min-h-[3.5rem] ${
-                        theme === "light" ? "text-gray-900" : "text-white"
+                        theme === "light" ? "text-gray-900" : "text-gray-900"
                       }`}>
                         {initiative.title}
                       </h3>
@@ -227,21 +234,21 @@ const Initiatives = () => {
 
                     {/* Description */}
                     <p className={`text-sm line-clamp-3 min-h-[4.5rem] ${
-                      theme === "light" ? "text-gray-600" : "text-slate-300"
+                      theme === "light" ? "text-gray-600" : "text-gray-700"
                     }`}>
                       {initiative.description}
                     </p>
 
                     {/* Location */}
                     <div className={`flex items-center gap-2 text-sm ${
-                      theme === "light" ? "text-gray-600" : "text-slate-300"
+                      theme === "light" ? "text-gray-600" : "text-gray-700"
                     }`}>
                       <MapPin className="h-4 w-4" />
                       {initiative.location}, {initiative.counties?.name}
                     </div>
 
                     {/* CTA */}
-                    <Button className="w-full mt-auto bg-pink-500 hover:bg-pink-600 text-white" variant="default">
+                    <Button className="w-full mt-auto text-white" variant="default" style={{ backgroundColor: "#5150A6" }}>
                       View & Vote
                     </Button>
                   </div>

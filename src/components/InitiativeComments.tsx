@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Comment } from "./Comment";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface InitiativeCommentsProps {
   initiativeId: string;
@@ -14,6 +15,7 @@ interface InitiativeCommentsProps {
 
 export const InitiativeComments = ({ initiativeId }: InitiativeCommentsProps) => {
   const [newComment, setNewComment] = useState("");
+  const { theme } = useTheme();
 
   // Fetch top-level comments (no parent)
   const { data: comments, refetch } = useQuery({
@@ -64,14 +66,14 @@ export const InitiativeComments = ({ initiativeId }: InitiativeCommentsProps) =>
 
   return (
     <section className="mt-8">
-      <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-2">
+      <h2 className={`text-2xl font-bold mb-4 flex items-center gap-2 ${theme === "light" ? "text-gray-900" : "text-white"}`}>
         <MessageSquare className="h-6 w-6" />
         Discuții ({comments?.length || 0})
       </h2>
 
       {/* Add new comment */}
       <Card className="p-6 mb-6" style={{ backgroundColor: '#EDEDB3' }}>
-        <h3 className="text-lg font-semibold text-foreground mb-3">Adaugă un comentariu</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-3">Adaugă un comentariu</h3>
         <Textarea
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
@@ -96,7 +98,7 @@ export const InitiativeComments = ({ initiativeId }: InitiativeCommentsProps) =>
           ))
         ) : (
           <Card className="p-8 text-center" style={{ backgroundColor: '#EDEDB3' }}>
-            <p className="text-muted-foreground">
+            <p className="text-gray-900">
               Nu există comentarii încă. Fii primul care comentează!
             </p>
           </Card>

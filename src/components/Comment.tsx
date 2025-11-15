@@ -161,12 +161,12 @@ export const Comment = ({ comment, initiativeId, onReplyAdded, level = 0 }: Comm
               variant="ghost"
               size="sm"
               onClick={() => handleVote("up")}
-              className={`h-8 w-8 p-0 ${userVote === "up" ? "text-primary" : "text-muted-foreground"}`}
+              className={`h-8 w-8 p-0 ${userVote === "up" ? "text-primary" : "text-gray-700"}`}
             >
               <ArrowUp className="h-4 w-4" />
             </Button>
             <span className={`text-sm font-semibold ${
-              score > 0 ? "text-primary" : score < 0 ? "text-destructive" : "text-muted-foreground"
+              score > 0 ? "text-primary" : score < 0 ? "text-destructive" : "text-gray-700"
             }`}>
               {score}
             </span>
@@ -174,7 +174,7 @@ export const Comment = ({ comment, initiativeId, onReplyAdded, level = 0 }: Comm
               variant="ghost"
               size="sm"
               onClick={() => handleVote("down")}
-              className={`h-8 w-8 p-0 ${userVote === "down" ? "text-destructive" : "text-muted-foreground"}`}
+              className={`h-8 w-8 p-0 ${userVote === "down" ? "text-destructive" : "text-gray-700"}`}
             >
               <ArrowDown className="h-4 w-4" />
             </Button>
@@ -182,7 +182,7 @@ export const Comment = ({ comment, initiativeId, onReplyAdded, level = 0 }: Comm
 
           {/* Comment content */}
           <div className="flex-1">
-            <p className="text-sm text-muted-foreground mb-2">
+            <p className="text-sm text-gray-700 mb-2">
               {new Date(comment.created_at).toLocaleDateString('ro-RO', {
                 year: 'numeric',
                 month: 'long',
@@ -191,13 +191,13 @@ export const Comment = ({ comment, initiativeId, onReplyAdded, level = 0 }: Comm
                 minute: '2-digit'
               })}
             </p>
-            <p className="text-foreground mb-3 whitespace-pre-wrap">{comment.content}</p>
+            <p className="text-gray-900 mb-3 whitespace-pre-wrap">{comment.content}</p>
             
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowReplyForm(!showReplyForm)}
-              className="gap-2 h-8 text-muted-foreground hover:text-foreground"
+              className="gap-2 h-8 text-gray-700 hover:text-gray-900"
             >
               <MessageSquare className="h-4 w-4" />
               Răspunde

@@ -121,25 +121,25 @@ const Settings = () => {
             }`}>
               <TabsTrigger value="account" className={`${
                 theme === "light" ? "text-gray-900" : "text-slate-300"
-              } data-[state=active]:${theme === "light" ? "bg-white text-gray-900" : "bg-slate-700 text-white"}`}>
+              } data-[state=active]:bg-[#FFAE00] data-[state=active]:text-gray-900`}>
                 <User className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Account</span>
               </TabsTrigger>
               <TabsTrigger value="comments" className={`${
                 theme === "light" ? "text-gray-900" : "text-slate-300"
-              } data-[state=active]:${theme === "light" ? "bg-white text-gray-900" : "bg-slate-700 text-white"}`}>
+              } data-[state=active]:bg-[#FFAE00] data-[state=active]:text-gray-900`}>
                 <MessageSquare className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Comments</span>
               </TabsTrigger>
               <TabsTrigger value="theme" className={`${
                 theme === "light" ? "text-gray-900" : "text-slate-300"
-              } data-[state=active]:${theme === "light" ? "bg-white text-gray-900" : "bg-slate-700 text-white"}`}>
+              } data-[state=active]:bg-[#FFAE00] data-[state=active]:text-gray-900`}>
                 <Sun className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Theme</span>
               </TabsTrigger>
               <TabsTrigger value="logout" className={`${
                 theme === "light" ? "text-gray-900" : "text-slate-300"
-              } data-[state=active]:${theme === "light" ? "bg-white text-gray-900" : "bg-slate-700 text-white"}`}>
+              } data-[state=active]:bg-[#FFAE00] data-[state=active]:text-gray-900`}>
                 <LogOut className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Logout</span>
               </TabsTrigger>
@@ -150,11 +150,11 @@ const Settings = () => {
               <Card className={`${
                 theme === "light"
                   ? "bg-white border-gray-200"
-                  : "bg-slate-800 border-slate-700"
-              }`}>
+                  : "border-gray-300"
+              }`} style={theme === "dark" ? { backgroundColor: "#D3D5ED" } : {}}>
                 <CardHeader>
-                  <CardTitle className={theme === "light" ? "text-gray-900" : "text-white"}>Account Settings</CardTitle>
-                  <CardDescription className={theme === "light" ? "text-gray-600" : "text-slate-300"}>
+                  <CardTitle className={theme === "light" ? "text-gray-900" : "text-gray-900"}>Account Settings</CardTitle>
+                  <CardDescription className={theme === "light" ? "text-gray-600" : "text-gray-600"}>
                     Edit your profile information
                   </CardDescription>
                 </CardHeader>
@@ -162,35 +162,35 @@ const Settings = () => {
                   {/* User Info */}
                   <div className="space-y-4">
                     <div>
-                      <Label className={theme === "light" ? "text-gray-900" : "text-white"}>Full Name</Label>
+                      <Label className={theme === "light" ? "text-gray-900" : "text-gray-900"}>Full Name</Label>
                       <Input
                         disabled
                         value={userProfile?.full_name || ""}
                         className={theme === "light"
                           ? "mt-1 bg-gray-100 border-gray-300 text-gray-600"
-                          : "mt-1 bg-slate-700 border-slate-600 text-slate-300"
+                          : "mt-1 bg-gray-50 border-gray-300 text-gray-600"
                         }
                       />
                     </div>
                     <div>
-                      <Label className={theme === "light" ? "text-gray-900" : "text-white"}>Email</Label>
+                      <Label className={theme === "light" ? "text-gray-900" : "text-gray-900"}>Email</Label>
                       <Input
                         disabled
                         value={user?.email || ""}
                         className={theme === "light"
                           ? "mt-1 bg-gray-100 border-gray-300 text-gray-600"
-                          : "mt-1 bg-slate-700 border-slate-600 text-slate-300"
+                          : "mt-1 bg-gray-50 border-gray-300 text-gray-600"
                         }
                       />
                     </div>
                     <div>
-                      <Label className={theme === "light" ? "text-gray-900" : "text-white"}>County</Label>
+                      <Label className={theme === "light" ? "text-gray-900" : "text-gray-900"}>County</Label>
                       <Input
                         disabled
                         value={userProfile?.county || ""}
                         className={theme === "light"
                           ? "mt-1 bg-gray-100 border-gray-300 text-gray-600"
-                          : "mt-1 bg-slate-700 border-slate-600 text-slate-300"
+                          : "mt-1 bg-gray-50 border-gray-300 text-gray-600"
                         }
                       />
                     </div>
@@ -204,18 +204,18 @@ const Settings = () => {
               <Card className={`${
                 theme === "light"
                   ? "bg-white border-gray-200"
-                  : "bg-slate-800 border-slate-700"
-              }`}>
+                  : "border-gray-300"
+              }`} style={theme === "dark" ? { backgroundColor: "#D3D5ED" } : {}}>
                 <CardHeader>
-                  <CardTitle className={theme === "light" ? "text-gray-900" : "text-white"}>Your Comments</CardTitle>
-                  <CardDescription className={theme === "light" ? "text-gray-600" : "text-slate-300"}>
+                  <CardTitle className={theme === "light" ? "text-gray-900" : "text-gray-900"}>Your Comments</CardTitle>
+                  <CardDescription className={theme === "light" ? "text-gray-600" : "text-gray-600"}>
                     View all comments you've posted
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {comments.length === 0 ? (
                     <p className={`text-center py-8 ${
-                      theme === "light" ? "text-gray-500" : "text-slate-400"
+                      theme === "light" ? "text-gray-500" : "text-gray-700"
                     }`}>
                       No comments posted yet
                     </p>
@@ -227,23 +227,23 @@ const Settings = () => {
                           className={`p-4 rounded-lg border ${
                             theme === "light"
                               ? "bg-gray-50 border-gray-200"
-                              : "bg-slate-700 border-slate-600"
+                              : "bg-gray-50 border-gray-300"
                           }`}
                         >
                           <div className="flex items-start justify-between mb-2">
                             <p className={`text-sm font-semibold ${
-                              theme === "light" ? "text-pink-600" : "text-pink-400"
+                              theme === "light" ? "text-pink-600" : "text-pink-600"
                             }`}>
                               On: {comment.initiatives?.title}
                             </p>
                             <p className={`text-xs ${
-                              theme === "light" ? "text-gray-500" : "text-slate-400"
+                              theme === "light" ? "text-gray-500" : "text-gray-600"
                             }`}>
                               {new Date(comment.created_at).toLocaleDateString()}
                             </p>
                           </div>
                           <p className={`text-sm ${
-                            theme === "light" ? "text-gray-900" : "text-white"
+                            theme === "light" ? "text-gray-900" : "text-gray-900"
                           }`}>{comment.content}</p>
                         </div>
                       ))}
@@ -258,11 +258,11 @@ const Settings = () => {
               <Card className={`${
                 theme === "light"
                   ? "bg-white border-gray-200"
-                  : "bg-slate-800 border-slate-700"
-              }`}>
+                  : "border-gray-300"
+              }`} style={theme === "dark" ? { backgroundColor: "#D3D5ED" } : {}}>
                 <CardHeader>
-                  <CardTitle className={theme === "light" ? "text-gray-900" : "text-white"}>Theme Settings</CardTitle>
-                  <CardDescription className={theme === "light" ? "text-gray-600" : "text-slate-300"}>
+                  <CardTitle className={theme === "light" ? "text-gray-900" : "text-gray-900"}>Theme Settings</CardTitle>
+                  <CardDescription className={theme === "light" ? "text-gray-600" : "text-gray-600"}>
                     Choose your preferred theme
                   </CardDescription>
                 </CardHeader>
@@ -273,7 +273,7 @@ const Settings = () => {
                       variant={theme === "dark" ? "default" : "outline"}
                       className={`h-24 flex flex-col items-center justify-center gap-2 ${
                         theme === "dark"
-                          ? "bg-pink-500 hover:bg-pink-600 text-white"
+                          ? "bg-[#FFAE00] hover:bg-[#ff9d00] text-gray-900"
                           : theme === "light"
                           ? "bg-gray-100 border-gray-300 text-gray-900 hover:bg-gray-200"
                           : "bg-slate-700 border-slate-600 text-white hover:bg-slate-600"
@@ -287,7 +287,7 @@ const Settings = () => {
                       variant={theme === "light" ? "default" : "outline"}
                       className={`h-24 flex flex-col items-center justify-center gap-2 ${
                         theme === "light"
-                          ? "bg-pink-500 hover:bg-pink-600 text-white"
+                          ? "bg-[#FFAE00] hover:bg-[#ff9d00] text-gray-900"
                           : theme === "dark"
                           ? "bg-slate-700 border-slate-600 text-white hover:bg-slate-600"
                           : "bg-gray-100 border-gray-300 text-gray-900 hover:bg-gray-200"
@@ -298,9 +298,9 @@ const Settings = () => {
                     </Button>
                   </div>
                   <p className={`text-sm ${
-                    theme === "light" ? "text-gray-600" : "text-slate-400"
+                    theme === "light" ? "text-gray-600" : "text-gray-700"
                   }`}>
-                    Current theme: <span className={theme === "light" ? "text-gray-900" : "text-white"}>
+                    Current theme: <span className={theme === "light" ? "text-gray-900" : "text-gray-900"}>
                       {theme === "light" ? "Light" : "Dark"}
                     </span>
                   </p>
@@ -313,17 +313,17 @@ const Settings = () => {
               <Card className={`${
                 theme === "light"
                   ? "bg-white border-gray-200"
-                  : "bg-slate-800 border-slate-700"
-              }`}>
+                  : "border-gray-300"
+              }`} style={theme === "dark" ? { backgroundColor: "#D3D5ED" } : {}}>
                 <CardHeader>
-                  <CardTitle className={theme === "light" ? "text-gray-900" : "text-white"}>Logout</CardTitle>
-                  <CardDescription className={theme === "light" ? "text-gray-600" : "text-slate-300"}>
+                  <CardTitle className={theme === "light" ? "text-gray-900" : "text-gray-900"}>Logout</CardTitle>
+                  <CardDescription className={theme === "light" ? "text-gray-600" : "text-gray-600"}>
                     Sign out of your account
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className={`mb-6 ${
-                    theme === "light" ? "text-gray-700" : "text-slate-300"
+                    theme === "light" ? "text-gray-700" : "text-gray-900"
                   }`}>
                     Are you sure you want to logout? You'll need to sign in again to access your account.
                   </p>
