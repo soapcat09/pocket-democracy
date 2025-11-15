@@ -84,7 +84,10 @@ const Index = () => {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center" style={{
+        background: "#7a2d2d",
+        backgroundImage: "linear-gradient(90deg, rgba(122, 45, 45, 1) 0%, rgba(65, 30, 100, 1) 35%, rgba(9, 9, 121, 1) 50%, rgba(0, 100, 200, 1) 75%, rgba(0, 212, 255, 1) 100%)"
+      }}>
         <div className="text-center space-y-4">
           <Vote className="h-12 w-12 text-primary mx-auto animate-pulse" />
           <p className="text-muted-foreground">Loading...</p>

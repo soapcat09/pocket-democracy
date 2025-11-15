@@ -213,103 +213,108 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center p-4 w-screen overflow-x-hidden" style={{
+      background: "#7a2d2d",
+      backgroundImage: "linear-gradient(90deg, rgba(122, 45, 45, 1) 0%, rgba(65, 30, 100, 1) 35%, rgba(9, 9, 121, 1) 50%, rgba(0, 100, 200, 1) 75%, rgba(0, 212, 255, 1) 100%)"
+    }}>
+      <Card className={`w-full max-w-2xl max-h-[95vh] overflow-y-auto border-slate-700 ${isLogin ? 'bg-slate-900' : 'bg-slate-900'}`}>
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
+          <CardTitle className="text-2xl font-bold text-center text-white">
             {isLogin ? "Login" : "Create Account"}
           </CardTitle>
-          <CardDescription className="text-center">
+          <CardDescription className="text-center text-slate-300">
             {isLogin
               ? "Log in to access the platform"
               : "Create a new account to vote"}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleAuth} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="example@email.ro"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+          <form onSubmit={handleAuth} className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="email" className="text-white text-sm">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="example@email.ro"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="bg-slate-700 text-white border-slate-500 text-sm"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="password" className="text-white text-sm">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="bg-slate-700 text-white border-slate-500 text-sm"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
 
             {!isLogin && (
               <>
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="confirmPassword" className="text-white text-sm">Confirm Pass</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      className="bg-slate-700 text-white border-slate-500 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="fullName" className="text-white text-sm">Full Name</Label>
+                    <Input
+                      id="fullName"
+                      type="text"
+                      placeholder="John Smith"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                      className="bg-slate-700 text-white border-slate-500 text-sm"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input
-                    id="fullName"
-                    type="text"
-                    placeholder="Ex: John Smith"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="phone" className="text-white text-sm">Phone</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="+40 or 07xx"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      required
+                      className="bg-slate-700 text-white border-slate-500 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="cnp" className="text-white text-sm">CNP</Label>
+                    <Input
+                      id="cnp"
+                      type="text"
+                      placeholder="1234567890123"
+                      maxLength={13}
+                      value={cnp}
+                      onChange={(e) => setCnp(e.target.value.replace(/\D/g, ''))}
+                      required
+                      className="bg-slate-700 text-white border-slate-500 text-sm"
+                    />
+                  </div>
                 </div>
-              </>
-            )}
-
-            {!isLogin && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="+40 or 07xx xxx xxx"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    required
-                  />
-                </div>
-              </>
-            )}
-
-            {!isLogin && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="cnp">CNP (Personal Numeric Code)</Label>
-                  <Input
-                    id="cnp"
-                    type="text"
-                    placeholder="1234567890123"
-                    maxLength={13}
-                    value={cnp}
-                    onChange={(e) => setCnp(e.target.value.replace(/\D/g, ''))}
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    County will be automatically extracted from CNP (digits 8-9)
-                  </p>
-                </div>
+                <p className="text-xs text-slate-300">
+                  County extracted from CNP (digits 8-9)
+                </p>
               </>
             )}
 
@@ -321,7 +326,7 @@ const Auth = () => {
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}
-              className="text-primary hover:underline"
+              className="text-blue-400 hover:underline"
             >
               {isLogin ? "Don't have an account? Create one" : "Already have an account? Log in"}
             </button>
