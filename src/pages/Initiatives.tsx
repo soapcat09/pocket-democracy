@@ -94,7 +94,10 @@ const Initiatives = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen w-screen overflow-x-hidden" style={{
+      background: "#7a2d2d",
+      backgroundImage: "linear-gradient(90deg, rgba(122, 45, 45, 1) 0%, rgba(65, 30, 100, 1) 35%, rgba(9, 9, 121, 1) 50%, rgba(0, 100, 200, 1) 75%, rgba(0, 212, 255, 1) 100%)"
+    }}>
       {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-4 py-4">
@@ -148,9 +151,15 @@ const Initiatives = () => {
       {/* Initiatives Grid */}
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6">
+<<<<<<< Updated upstream
           <h2 className="text-2xl font-bold text-foreground mb-2">Inițiative Active</h2>
           <p className="text-muted-foreground">
             {filteredInitiatives.length} inițiative disponibile pentru votare
+=======
+          <h2 className="text-2xl font-bold text-white mb-2">Active Initiatives</h2>
+          <p className="text-slate-300">
+            {filteredInitiatives.length} initiatives available for voting
+>>>>>>> Stashed changes
           </p>
         </div>
 
@@ -160,7 +169,7 @@ const Initiatives = () => {
 
             return (
               <Link key={initiative.id} to={`/initiative/${initiative.id}`}>
-                <Card className="h-full p-6 hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-b from-card to-card/50 flex flex-col">
+                <Card className="h-full p-6 hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-b from-slate-800 to-slate-800/70 flex flex-col">
                   <div className="flex flex-col flex-1 space-y-4">
                     {/* Header */}
                     <div className="space-y-2">
@@ -173,25 +182,30 @@ const Initiatives = () => {
                           {daysLeft}d rămase
                         </div>
                       </div>
-                      <h3 className="font-bold text-lg text-foreground leading-tight line-clamp-2 min-h-[3.5rem]">
+                      <h3 className="font-bold text-lg text-white leading-tight line-clamp-2 min-h-[3.5rem]">
                         {initiative.title}
                       </h3>
                     </div>
 
                     {/* Description */}
-                    <p className="text-sm text-muted-foreground line-clamp-3 min-h-[4.5rem]">
+                    <p className="text-sm text-slate-300 line-clamp-3 min-h-[4.5rem]">
                       {initiative.description}
                     </p>
 
                     {/* Location */}
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 text-sm text-slate-300">
                       <MapPin className="h-4 w-4" />
                       {initiative.location}, {initiative.counties?.name}
                     </div>
 
                     {/* CTA */}
+<<<<<<< Updated upstream
                     <Button className="w-full mt-auto" variant="default">
                       Vezi & Votează
+=======
+                    <Button className="w-full mt-auto bg-pink-500 hover:bg-pink-600 text-white" variant="default">
+                      View & Vote
+>>>>>>> Stashed changes
                     </Button>
                   </div>
                 </Card>
