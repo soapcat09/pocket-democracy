@@ -60,7 +60,11 @@ export const InitiativeComments = ({ initiativeId }: InitiativeCommentsProps) =>
           body: JSON.stringify({
             contents: [{
               parts: [{
-                text: `You are a content moderator. Analyze this comment for abusive, hateful, or offensive language. Comment: "${newComment.trim()}" Respond with ONLY "SAFE" or "BLOCKED".`
+                text: `Ești moderator de conținut pentru un forum de discuții civice din România. Analizează comentariul următor pentru injuraturi, limbaj vulgar, sau insultă în limba română. 
+
+Comentariu: "${newComment.trim()}"
+
+Răspunde cu DOAR un cuvânt: "SAFE" dacă comentariul este respectuos și nu conține injuraturi/insultă în limba română, sau "BLOCKED" dacă conține limbaj vulgar/injurii românești.`
               }]
             }],
             safetySettings: [
