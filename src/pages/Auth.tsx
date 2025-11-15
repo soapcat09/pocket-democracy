@@ -291,7 +291,7 @@ const Auth = () => {
       <div 
         className="min-h-screen flex items-center justify-center p-4"
         style={{
-          backgroundImage: `url('/src/assets/background.png')`,
+          backgroundImage: `url('/src/assets/background-auth.png')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed',
@@ -349,7 +349,7 @@ const Auth = () => {
     <div 
       className="min-h-screen flex items-center justify-center p-4"
       style={{
-        backgroundImage: `url('/src/assets/background.png')`,
+        backgroundImage: `url('/src/assets/background-auth.png')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
@@ -487,7 +487,7 @@ const Auth = () => {
               </>
             )}
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full text-white" style={{ backgroundColor: '#5150A6' }} disabled={loading}>
               {loading ? "Se procesează..." : isLogin ? "Autentificare" : "Creare cont"}
             </Button>
 

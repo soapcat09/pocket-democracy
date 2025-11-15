@@ -48,8 +48,17 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{
+        backgroundImage: "url('/src/assets/background-auth.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm">
         <CardHeader>
           <CardTitle>Resetare Parolă</CardTitle>
           <CardDescription>
@@ -112,7 +121,7 @@ const ResetPassword = () => {
                 </Button>
               </div>
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full text-white" style={{ backgroundColor: '#5150A6' }} disabled={loading}>
               {loading ? "Se actualizează..." : "Schimbă Parola"}
             </Button>
           </form>
