@@ -83,6 +83,10 @@ const Auth = () => {
   const [session, setSession] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [show2FAInput, setShow2FAInput] = useState(false);
+  const [twoFACode, setTwoFACode] = useState("");
+  const [generated2FACode, setGenerated2FACode] = useState("");
+  const [pendingAuthData, setPendingAuthData] = useState<any>(null);
 
   useEffect(() => {
     // Check for existing session
@@ -120,7 +124,7 @@ const Auth = () => {
           return;
         }
 
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email: validation.data.email,
           password: validation.data.password,
         });
@@ -131,8 +135,28 @@ const Auth = () => {
           } else {
             toast.error(error.message);
           }
-        } else {
-          toast.success("Autentificare reușită!");
+        } else if (data.user) {
+          // Verifică dacă utilizatorul are 2FA activat
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("twofa_sms_enabled")
+            .eq("user_id", data.user.id)
+            .single();
+
+          if (profileData?.twofa_sms_enabled) {
+            // Generează cod 2FA
+            const code = Math.floor(100000 + Math.random() * 900000).toString();
+            setGenerated2FACode(code);
+            setPendingAuthData(data);
+            setShow2FAInput(true);
+            console.log("🔐 COD 2FA (MOD DEZVOLTARE):", code);
+            toast.info("Verifică consola pentru codul 2FA");
+            
+            // Deconectează temporar pentru a cere codul 2FA
+            await supabase.auth.signOut();
+          } else {
+            toast.success("Autentificare reușită!");
+          }
         }
       } else {
         // Validate signup input
@@ -214,6 +238,81 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  const handle2FAVerification = async () => {
+    if (twoFACode === generated2FACode) {
+      setLoading(true);
+      try {
+        // Re-autentifică utilizatorul
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email,
+          password: password,
+        });
+
+        if (error) throw error;
+
+        toast.success("Autentificare reușită cu 2FA!");
+        setShow2FAInput(false);
+        setTwoFACode("");
+      } catch (error: any) {
+        toast.error("Eroare la autentificare: " + error.message);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      toast.error("Cod 2FA incorect");
+    }
+  };
+
+  if (show2FAInput) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold text-center">
+              Verificare 2FA
+            </CardTitle>
+            <CardDescription className="text-center">
+              Introdu codul de verificare din consolă
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="twoFACode">Cod 2FA</Label>
+                <p className="text-xs text-muted-foreground">
+                  Verifică consola browserului (F12 → Console)
+                </p>
+                <Input
+                  id="twoFACode"
+                  type="text"
+                  placeholder="000000"
+                  value={twoFACode}
+                  onChange={(e) => setTwoFACode(e.target.value)}
+                  maxLength={6}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handle2FAVerification} className="flex-1" disabled={loading}>
+                  {loading ? "Se verifică..." : "Verifică"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShow2FAInput(false);
+                    setTwoFACode("");
+                    setGenerated2FACode("");
+                  }}
+                >
+                  Anulează
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
@@ -351,6 +450,19 @@ const Auth = () => {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Se procesează..." : isLogin ? "Autentificare" : "Creare cont"}
             </Button>
+
+            {isLogin && (
+              <div className="text-center">
+                <Button
+                  type="button"
+                  variant="link"
+                  className="text-sm text-muted-foreground hover:text-primary"
+                  onClick={() => navigate("/forgot-password")}
+                >
+                  Ai uitat parola?
+                </Button>
+              </div>
+            )}
           </form>
           <div className="mt-4 text-center text-sm">
             <button
