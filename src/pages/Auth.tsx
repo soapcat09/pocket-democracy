@@ -211,9 +211,13 @@ const Auth = () => {
         // Extract county from CNP
         const county = getCountyFromCnp(cnpValue);
 
+        const redirectUrl = `${window.location.origin}/`;
         const { data, error } = await supabase.auth.signUp({
           email: validation.data.email,
           password: validation.data.password,
+          options: {
+            emailRedirectTo: redirectUrl,
+          },
         });
 
         if (error) {
@@ -246,21 +250,7 @@ const Auth = () => {
             // Clean up the auth user if profile creation failed
             await supabase.auth.signOut();
           } else {
-            // Autologin after signup
-            const { error: signInError } = await supabase.auth.signInWithPassword({
-              email: validation.data.email,
-              password: validation.data.password,
-            });
-
-            if (signInError) {
-              toast.error("Cont creat dar autologin a eșuat. Te rog autentifică-te manual.");
-            } else {
-              toast.success("Cont creat cu succes!");
-              // Redirect to initiatives page after successful signup
-              setTimeout(() => {
-                navigate("/initiatives");
-              }, 500);
-            }
+            toast.success("Cont creat cu succes! Verifică email-ul pentru confirmare.");
           }
         }
       }
@@ -298,17 +288,8 @@ const Auth = () => {
 
   if (show2FAInput) {
     return (
-      <div 
-        className="min-h-screen flex items-center justify-center p-4"
-        style={{
-          backgroundImage: `url('/src/assets/background-auth.png')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-          backgroundRepeat: 'no-repeat',
-        }}
-      >
-        <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/5">
+        <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center">
               Verificare 2FA
@@ -356,22 +337,25 @@ const Auth = () => {
   }
 
   return (
-    <div 
-      className="min-h-screen flex items-center justify-center p-4"
-      style={{
-        backgroundImage: `url('/src/assets/background-auth.png')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-        backgroundRepeat: 'no-repeat',
-      }}
-    >
-      <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm">
+    <div className={`min-h-screen flex items-center justify-center p-4 ${
+      theme === "light"
+        ? "bg-gray-100"
+        : "bg-gradient-to-br from-slate-900 via-blue-900 to-cyan-600"
+    }`}>
+      <Card className={`w-full max-w-md ${
+        theme === "light"
+          ? "bg-white border-gray-200"
+          : "bg-slate-900 border-slate-700"
+      }`}>
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center text-gray-900">
+          <CardTitle className={`text-2xl font-bold text-center ${
+            theme === "light" ? "text-gray-900" : "text-white"
+          }`}>
             {isLogin ? "Autentificare" : "Creare cont"}
           </CardTitle>
-          <CardDescription className="text-center text-gray-600">
+          <CardDescription className={`text-center ${
+            theme === "light" ? "text-gray-600" : "text-slate-400"
+          }`}>
             {isLogin
               ? "Intră în cont pentru a accesa platformă"
               : "Creează un cont nou pentru a vota"}
@@ -497,7 +481,7 @@ const Auth = () => {
               </>
             )}
 
-            <Button type="submit" className="w-full text-white" style={{ backgroundColor: '#5150A6' }} disabled={loading}>
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Se procesează..." : isLogin ? "Autentificare" : "Creare cont"}
             </Button>
 
@@ -518,7 +502,7 @@ const Auth = () => {
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}
-              className="text-primary hover:underline"
+              className="text-primary hover:underline font-semibold"
             >
               {isLogin ? "Nu ai cont? Creează unul" : "Ai deja cont? Autentifică-te"}
             </button>

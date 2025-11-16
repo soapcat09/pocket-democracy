@@ -96,16 +96,9 @@ const Initiatives = () => {
   }
 
   return (
-<<<<<<< Updated upstream
     <div className={`min-h-screen w-screen overflow-x-hidden ${
       theme === "light" ? "bg-gray-100" : "bg-gray-900"
     }`}>
-=======
-    <div className="min-h-screen w-screen overflow-x-hidden" style={{
-      background: "#7a2d2d",
-      backgroundImage: "linear-gradient(90deg, rgba(122, 45, 45, 1) 0%, rgba(65, 30, 100, 1) 35%, rgba(9, 9, 121, 1) 50%, rgba(0, 100, 200, 1) 75%, rgba(0, 212, 255, 1) 100%)"
-    }}>
->>>>>>> Stashed changes
       {/* Header */}
       <header className={`border-b ${
         theme === "light"
@@ -191,13 +184,8 @@ const Initiatives = () => {
         theme === "light" ? "bg-gray-100" : ""
       }`}>
         <div className="mb-6">
-<<<<<<< Updated upstream
           <h2 className={`text-2xl font-bold mb-2 ${theme === "light" ? "text-gray-900" : "text-white"}`}>Active Initiatives</h2>
           <p className={theme === "light" ? "text-gray-600" : "text-slate-300"}>
-=======
-          <h2 className="text-2xl font-bold text-white mb-2">Active Initiatives</h2>
-          <p className="text-slate-300">
->>>>>>> Stashed changes
             {filteredInitiatives.length} initiatives available for voting
           </p>
         </div>
@@ -208,15 +196,11 @@ const Initiatives = () => {
 
             return (
               <Link key={initiative.id} to={`/initiative/${initiative.id}`}>
-<<<<<<< Updated upstream
                 <Card className={`h-full p-6 hover:shadow-lg transition-shadow cursor-pointer flex flex-col ${
                   theme === "light"
                     ? "bg-white border-gray-200"
                     : "border-slate-700"
                 }`} style={theme === "dark" ? { backgroundColor: "#D3D5ED" } : undefined}>
-=======
-                <Card className="h-full p-6 hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-b from-slate-800 to-slate-800/70 flex flex-col">
->>>>>>> Stashed changes
                   <div className="flex flex-col flex-1 space-y-4">
                     {/* Header */}
                     <div className="space-y-2">
@@ -231,46 +215,30 @@ const Initiatives = () => {
                           {daysLeft}d rămase
                         </div>
                       </div>
-<<<<<<< Updated upstream
                       <h3 className={`font-bold text-lg leading-tight line-clamp-2 min-h-[3.5rem] ${
                         theme === "light" ? "text-gray-900" : "text-gray-900"
                       }`}>
-=======
-                      <h3 className="font-bold text-lg text-white leading-tight line-clamp-2 min-h-[3.5rem]">
->>>>>>> Stashed changes
                         {initiative.title}
                       </h3>
                     </div>
 
                     {/* Description */}
-<<<<<<< Updated upstream
                     <p className={`text-sm line-clamp-3 min-h-[4.5rem] ${
                       theme === "light" ? "text-gray-600" : "text-gray-700"
                     }`}>
-=======
-                    <p className="text-sm text-slate-300 line-clamp-3 min-h-[4.5rem]">
->>>>>>> Stashed changes
                       {initiative.description}
                     </p>
 
                     {/* Location */}
-<<<<<<< Updated upstream
                     <div className={`flex items-center gap-2 text-sm ${
                       theme === "light" ? "text-gray-600" : "text-gray-700"
                     }`}>
-=======
-                    <div className="flex items-center gap-2 text-sm text-slate-300">
->>>>>>> Stashed changes
                       <MapPin className="h-4 w-4" />
                       {initiative.location}, {initiative.counties?.name}
                     </div>
 
                     {/* CTA */}
-<<<<<<< Updated upstream
                     <Button className="w-full mt-auto text-white" variant="default" style={{ backgroundColor: "#5150A6" }}>
-=======
-                    <Button className="w-full mt-auto bg-pink-500 hover:bg-pink-600 text-white" variant="default">
->>>>>>> Stashed changes
                       View & Vote
                     </Button>
                   </div>
